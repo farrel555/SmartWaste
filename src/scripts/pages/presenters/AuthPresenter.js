@@ -1,6 +1,6 @@
-// src/scripts/pages/presenters/AuthPresenter.js
+// src/scripts/pages/presenters/AuthPresenter.js (Versi Final untuk Netlify Identity)
 
-import AuthService from '../../services/AuthService'; // Pastikan path ini benar
+import AuthService from '../../services/AuthService';
 
 class AuthPresenter {
     constructor(view) {
@@ -12,7 +12,6 @@ class AuthPresenter {
         this.view.render();
     }
 
-    // Metode ini dipanggil dari AuthView saat tombol diklik
     handleAuthAction() {
         // Memanggil AuthService untuk membuka widget popup Netlify Identity
         AuthService.login(); 

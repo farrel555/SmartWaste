@@ -1,4 +1,4 @@
-// src/scripts/pages/views/AuthView.js
+// src/scripts/pages/views/AuthView.js (Versi Final untuk Netlify Identity)
 
 import BaseView from './BaseView';
 
@@ -25,7 +25,6 @@ class AuthView extends BaseView {
     bindEvents() {
         this.bind('click', '#auth-action-btn', () => {
             if (this.presenter && this.presenter.handleAuthAction) {
-                // Beritahu presenter untuk menampilkan widget
                 this.presenter.handleAuthAction();
             }
         });

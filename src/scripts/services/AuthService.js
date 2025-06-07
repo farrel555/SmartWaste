@@ -1,17 +1,17 @@
-// src/scripts/services/AuthService.js (Versi untuk Netlify Identity)
+// src/scripts/services/AuthService.js (Versi Final untuk Netlify Identity)
 
 class AuthService {
     /**
      * Inisialisasi listener Netlify Identity.
      */
     init() {
-        // Objek netlifyIdentity dibuat secara global oleh skrip dari index.html
         if (window.netlifyIdentity) {
             window.netlifyIdentity.on('init', user => {
                 if (!user) {
                     window.netlifyIdentity.on('login', () => {
-                        // Arahkan ke dashboard setelah login
-                        document.location.href = '/#dashboard';
+                        // Arahkan ke dashboard setelah login berhasil dari widget
+                        // Menggunakan hash agar router kita menangani
+                        window.location.assign('/#dashboard');
                     });
                 }
             });
@@ -27,20 +27,11 @@ class AuthService {
     }
 
     /**
-     * Membuka widget untuk login.
+     * Membuka widget untuk login atau daftar.
      */
     login() {
         if (window.netlifyIdentity) {
-            window.netlifyIdentity.open('login');
-        }
-    }
-
-    /**
-     * Membuka widget untuk signup.
-     */
-    signup() {
-        if (window.netlifyIdentity) {
-            window.netlifyIdentity.open('signup');
+            window.netlifyIdentity.open(); // Cukup .open() untuk menampilkan pilihan login/signup
         }
     }
 
