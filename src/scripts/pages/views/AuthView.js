@@ -5,82 +5,43 @@ import BaseView from './BaseView';
 class AuthView extends BaseView {
     constructor(containerId) {
         super(containerId);
-        this.loginHandler = null;
-        this.registerHandler = null;
+        // Handler tidak lagi diperlukan di sini
     }
 
     render() {
+        // DIUBAH: Hapus semua form input, ganti dengan halaman selamat datang
         this.container.innerHTML = `
             <div class="card auth-card">
-                <h2>Autentikasi</h2>
-                <div class="form-group">
-                    <label for="auth-username">Username:</label>
-                    <input type="text" id="auth-username" placeholder="Masukkan Username">
+                <div class="page-specific-header">
+                    <div class="page-header-logo"><i class="fas fa-recycle"></i> SmartWaste</div>
                 </div>
-                <div class="form-group">
-                    <label for="auth-password">Password:</label>
-                    <input type="password" id="auth-password" placeholder="Masukkan Password">
+                <h2>Selamat Datang!</h2>
+                <p>Masuk atau daftar untuk mengakses semua fitur pengelolaan sampah cerdas.</p>
+                <div class="auth-action">
+                    <button class="btn" id="auth-action-btn">
+                        <i class="fas fa-sign-in-alt"></i> Masuk / Daftar
+                    </button>
                 </div>
-                <button class="btn" id="login-btn">Login</button>
-                <button class="btn btn-secondary" id="register-btn">Register</button>
-                <div class="user-info">
-                    <h3>Nama: Nama</h3>
-                    <p>Current: None</p>
-                    <p>Login: Logout</p>
-                </div>
-                
-                <div id="auth-message" class="message"></div> 
+                <p class="auth-provider-info">
+                    Proses autentikasi aman disediakan oleh Auth0.
+                </p>
             </div>
         `;
         this.bindEvents();
     }
 
     bindEvents() {
-        this.bind('click', '#login-btn', () => {
-            const username = this.container.querySelector('#auth-username').value;
-            const password = this.container.querySelector('#auth-password').value;
-            if (this.loginHandler) {
-                this.loginHandler(username, password);
-            }
-        });
-
-        this.bind('click', '#register-btn', () => {
-            const username = this.container.querySelector('#auth-username').value;
-            const password = this.container.querySelector('#auth-password').value;
-            if (this.registerHandler) {
-                this.registerHandler(username, password);
+        // DIUBAH: Hanya ada satu event listener untuk satu tombol aksi
+        this.bind('click', '#auth-action-btn', () => {
+            // Panggil metode presenter untuk memulai proses autentikasi
+            if (this.presenter && this.presenter.handleAuthAction) {
+                this.presenter.handleAuthAction();
             }
         });
     }
 
-    setLoginHandler(handler) {
-        this.loginHandler = handler;
-    }
-
-    setRegisterHandler(handler) {
-        this.registerHandler = handler;
-    }
-
-    // Metode untuk menampilkan pesan di UI
-    showMessage(message, type = 'success') {
-        const messageDiv = this.container.querySelector('#auth-message');
-        if (messageDiv) {
-            messageDiv.textContent = message;
-            messageDiv.className = `message ${type}`; // Menambahkan class CSS untuk styling
-            setTimeout(() => {
-                messageDiv.textContent = ''; // Hapus pesan setelah 3 detik
-                messageDiv.className = 'message'; // Bersihkan kelas styling
-            }, 3000); 
-        } else {
-            console.warn(`Auth Message (${type}): ${message} - Elemen pesan feedback tidak ditemukan.`);
-        }
-    }
-    
-    // Metode opsional untuk mengosongkan form (jika diperlukan setelah register/login)
-    clearForm() {
-        this.container.querySelector('#auth-username').value = '';
-        this.container.querySelector('#auth-password').value = '';
-    }
+    // Metode-metode lama (setLoginHandler, setRegisterHandler, showMessage, clearForm)
+    // tidak lagi diperlukan dan bisa dihapus untuk menjaga kebersihan kode.
 }
 
 export default AuthView;
