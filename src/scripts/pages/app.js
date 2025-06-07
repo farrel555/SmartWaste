@@ -1,4 +1,4 @@
-// src/scripts/app.js (Disesuaikan kembali untuk Netlify Identity)
+// src/scripts/app.js
 
 import AuthView from './views/AuthView';
 import DashboardView from './views/DashboardView';
@@ -11,76 +11,111 @@ import AuthService from '../services/AuthService';
 class AppRouter {
     constructor(appContainerId) {
         this.appContainer = document.getElementById(appContainerId);
+        if (!this.appContainer) {
+            console.error(`Elemen dengan ID '${appContainerId}' tidak ditemukan.`);
+            return;
+        }
+
         this.routes = {};
         this.currentPresenter = null;
 
+        // 1. Render layout HTML dasar terlebih dahulu
         this.renderGlobalLayout();
 
-        // Referensi elemen UI global
+        // 2. Setelah HTML ada, baru cari elemen-elemennya
+        this.setupElements();
+
+        // 3. Inisialisasi Views dan Presenters
+        this.setupViewsAndPresenters();
+        
+        // 4. Inisialisasi dan ikat event dari AuthService (Netlify Identity)
+        AuthService.init();
+        this.bindAuthEvents();
+
+        // 5. Ikat event-event global ke elemen yang sudah ditemukan
+        this.bindGlobalEvents();
+        
+        // 6. Siapkan rute dan navigasi awal
+        this.setupRoutes(); // Ini bisa jadi async
+        this.bindPopstateEvent();
+        
+        // 7. Sesuaikan UI berdasarkan status login
+        this.updateUIVisibility();
+    }
+
+    renderGlobalLayout() {
+        this.appContainer.innerHTML = `
+            <header class="app-header">
+                <div class="header-left-content">
+                    <button id="menu-toggle-btn" class="menu-button"><i class="fas fa-bars"></i></button>
+                    <div class="app-logo-text"><i class="fas fa-recycle"></i> SmartWaste</div>
+                </div>
+                <div class="header-right-content"></div>
+            </header>
+            <div id="side-menu" class="side-menu">
+                <div class="menu-header">
+                    <div class="logo-text"><i class="fas fa-recycle"></i> SmartWaste</div>
+                    <button id="menu-close-btn" class="menu-button"><i class="fas fa-times"></i></button>
+                </div>
+                <ul class="menu-items">
+                    <li data-route="dashboard"><i class="fas fa-chart-line"></i> Dashboard</li>
+                    <li data-route="scan"><i class="fas fa-camera"></i> Scan Sampah</li>
+                    <li id="logout-menu-item"><i class="fas fa-sign-out-alt"></i> Logout</li>
+                </ul>
+            </div>
+            <div id="menu-overlay" class="menu-overlay"></div>
+            <main id="main-content-area" class="main-content"></main>
+        `;
+    }
+
+    // BARU: Metode terpisah untuk mencari elemen DOM
+    setupElements() {
         this.menuToggleBtn = document.getElementById('menu-toggle-btn');
         this.menuCloseBtn = document.getElementById('menu-close-btn');
         this.sideMenu = document.getElementById('side-menu');
         this.menuOverlay = document.getElementById('menu-overlay');
         this.logoutMenuItem = document.getElementById('logout-menu-item');
+    }
 
-        // Inisialisasi Views
+    // BARU: Metode terpisah untuk inisialisasi Views dan Presenters
+    setupViewsAndPresenters() {
         this.authView = new AuthView('main-content-area');
         this.dashboardView = new DashboardView('main-content-area');
-        // ... (views lain)
         this.scanView = new ScanView('main-content-area');
         this.classificationView = new ClassificationView('main-content-area');
         this.recommendationView = new RecommendationView('main-content-area');
-
         this.authPresenter = new AuthPresenter(this.authView);
-
-        // Inisialisasi dan ikat event Netlify Identity
-        AuthService.init();
-        this.bindAuthEvents();
-
-        this.bindGlobalEvents();
-        this.setupRoutes(); // Ini bisa jadi async karena dynamic import
-        this.bindPopstateEvent();
-        
-        this.updateUIVisibility();
-    }
-
-    renderGlobalLayout() {
-        // ... (Tidak ada perubahan di sini)
     }
 
     bindGlobalEvents() {
-        // ... (Tidak ada perubahan pada toggleMenu dan navigasi menu item)
+        // Metode ini sekarang dijamin aman karena setupElements sudah memastikan elemennya ada.
         this.menuToggleBtn.addEventListener('click', () => this.toggleMenu(true));
         this.menuCloseBtn.addEventListener('click', () => this.toggleMenu(false));
         this.menuOverlay.addEventListener('click', () => this.toggleMenu(false));
 
         this.sideMenu.querySelectorAll('.menu-items li[data-route]').forEach(item => {
             item.addEventListener('click', (event) => {
-                const route = event.currentTarget.dataset.route;
-                this.navigateTo(route);
+                this.navigateTo(event.currentTarget.dataset.route);
                 this.toggleMenu(false);
             });
         });
 
-        // Logika logout sekarang memanggil AuthService versi Netlify Identity
         this.logoutMenuItem.addEventListener('click', () => {
-            AuthService.logout(() => {
-                console.log("Logout berhasil, event akan menangani redirect.");
-            });
+            AuthService.logout(() => console.log("Logout callback dijalankan."));
             this.toggleMenu(false);
         });
     }
 
+    // ... (sisa metode: bindAuthEvents, updateUIVisibility, toggleMenu, dll. TIDAK BERUBAH) ...
     bindAuthEvents() {
-        // Metode ini mendengarkan event dari widget
         AuthService.on('login', (user) => {
-            console.log('Pengguna berhasil login:', user);
+            console.log('Event Login terdeteksi:', user);
             this.updateUIVisibility();
             this.navigateTo('dashboard');
         });
 
         AuthService.on('logout', () => {
-            console.log('Pengguna berhasil logout.');
+            console.log('Event Logout terdeteksi.');
             this.updateUIVisibility();
             this.navigateTo('auth');
         });
@@ -99,7 +134,15 @@ class AppRouter {
         }
     }
 
-    toggleMenu(open) { /* ... (tidak ada perubahan) ... */ }
+    toggleMenu(open) {
+        if (open) {
+            this.sideMenu.classList.add('open');
+            this.menuOverlay.classList.add('open');
+        } else {
+            this.sideMenu.classList.remove('open');
+            this.menuOverlay.classList.remove('open');
+        }
+    }
 
     async setupRoutes() {
         try {
