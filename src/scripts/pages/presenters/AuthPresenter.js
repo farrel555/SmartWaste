@@ -5,17 +5,16 @@ import AuthService from '../../services/AuthService'; // Pastikan path ini benar
 class AuthPresenter {
     constructor(view) {
         this.view = view;
-        this.view.presenter = this; // Hubungkan presenter ke view
+        this.view.presenter = this;
     }
 
-    // Metode ini dipanggil oleh AppRouter untuk merender view awal
     init() {
         this.view.render();
     }
 
-    // Metode ini dipanggil oleh AuthView saat tombol diklik
+    // Metode ini dipanggil dari AuthView saat tombol diklik
     handleAuthAction() {
-        // Memulai proses login/daftar dengan mengalihkan ke halaman Auth0
+        // Memanggil AuthService untuk membuka widget popup Netlify Identity
         AuthService.login(); 
     }
 }
