@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
 
 // Ini adalah fungsi yang akan diekspor. Webpack akan memanggilnya dan
 // meneruskan argumen CLI seperti '--mode development' atau '--mode production'
@@ -42,6 +43,7 @@ module.exports = (env, argv) => {
       ],
     },
     plugins: [
+      new Dotenv(), 
       new HtmlWebpackPlugin({
         // PERBAIKI PATH INI: Asumsi public/index.html berada di root proyek
         template: './src/public/index.html',

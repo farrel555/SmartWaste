@@ -12,9 +12,6 @@ class AuthView extends BaseView {
         // DIUBAH: Hapus semua form input, ganti dengan halaman selamat datang
         this.container.innerHTML = `
             <div class="card auth-card">
-                <div class="page-specific-header">
-                    <div class="page-header-logo"><i class="fas fa-recycle"></i> SmartWaste</div>
-                </div>
                 <h2>Selamat Datang!</h2>
                 <p>Masuk atau daftar untuk mengakses semua fitur pengelolaan sampah cerdas.</p>
                 <div class="auth-action">
