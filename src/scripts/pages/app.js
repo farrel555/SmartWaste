@@ -1,11 +1,18 @@
 // src/scripts/app.js
 
+// Impor Views
 import AuthView from './views/AuthView';
 import DashboardView from './views/DashboardView';
 import ScanView from './views/ScanView';
 import ClassificationView from './views/ClassificationView';
 import RecommendationView from './views/RecommendationView';
+import HistoryView from './views/HistoryView';
+
+// Impor Presenters
 import AuthPresenter from './presenters/AuthPresenter';
+import HistoryPresenter from './presenters/HistoryPresenter'; // BARU
+
+// Impor Services
 import AuthService from '../services/AuthService'; 
 
 class AppRouter {
@@ -19,27 +26,17 @@ class AppRouter {
         this.routes = {};
         this.currentPresenter = null;
 
-        // 1. Render layout HTML dasar terlebih dahulu
         this.renderGlobalLayout();
-
-        // 2. Setelah HTML ada, baru cari elemen-elemennya
         this.setupElements();
-
-        // 3. Inisialisasi Views dan Presenters
         this.setupViewsAndPresenters();
         
-        // 4. Inisialisasi dan ikat event dari AuthService (Netlify Identity)
         AuthService.init();
         this.bindAuthEvents();
-
-        // 5. Ikat event-event global ke elemen yang sudah ditemukan
         this.bindGlobalEvents();
         
-        // 6. Siapkan rute dan navigasi awal
-        this.setupRoutes(); // Ini bisa jadi async
+        this.setupRoutes();
         this.bindPopstateEvent();
         
-        // 7. Sesuaikan UI berdasarkan status login
         this.updateUIVisibility();
     }
 
@@ -60,7 +57,7 @@ class AppRouter {
                 <ul class="menu-items">
                     <li data-route="dashboard"><i class="fas fa-chart-line"></i> Dashboard</li>
                     <li data-route="scan"><i class="fas fa-camera"></i> Scan Sampah</li>
-                    <li id="logout-menu-item"><i class="fas fa-sign-out-alt"></i> Logout</li>
+                    <li data-route="history"><i class="fas fa-history"></i> Riwayat Scan</li> <li id="logout-menu-item"><i class="fas fa-sign-out-alt"></i> Logout</li>
                 </ul>
             </div>
             <div id="menu-overlay" class="menu-overlay"></div>
@@ -68,7 +65,6 @@ class AppRouter {
         `;
     }
 
-    // BARU: Metode terpisah untuk mencari elemen DOM
     setupElements() {
         this.menuToggleBtn = document.getElementById('menu-toggle-btn');
         this.menuCloseBtn = document.getElementById('menu-close-btn');
@@ -77,18 +73,20 @@ class AppRouter {
         this.logoutMenuItem = document.getElementById('logout-menu-item');
     }
 
-    // BARU: Metode terpisah untuk inisialisasi Views dan Presenters
     setupViewsAndPresenters() {
+        // DIUBAH: Inisialisasi View dan Presenter baru
         this.authView = new AuthView('main-content-area');
         this.dashboardView = new DashboardView('main-content-area');
         this.scanView = new ScanView('main-content-area');
         this.classificationView = new ClassificationView('main-content-area');
         this.recommendationView = new RecommendationView('main-content-area');
+        this.historyView = new HistoryView('main-content-area');
+
         this.authPresenter = new AuthPresenter(this.authView);
+        this.historyPresenter = new HistoryPresenter(this.historyView);
     }
 
     bindGlobalEvents() {
-        // Metode ini sekarang dijamin aman karena setupElements sudah memastikan elemennya ada.
         this.menuToggleBtn.addEventListener('click', () => this.toggleMenu(true));
         this.menuCloseBtn.addEventListener('click', () => this.toggleMenu(false));
         this.menuOverlay.addEventListener('click', () => this.toggleMenu(false));
@@ -106,7 +104,6 @@ class AppRouter {
         });
     }
 
-    // ... (sisa metode: bindAuthEvents, updateUIVisibility, toggleMenu, dll. TIDAK BERUBAH) ...
     bindAuthEvents() {
         AuthService.on('login', (user) => {
             console.log('Event Login terdeteksi:', user);
@@ -147,12 +144,19 @@ class AppRouter {
     async setupRoutes() {
         try {
             const { default: ScanPresenter } = await import('./presenters/ScanPresenter');
-            this.scanPresenter = new ScanPresenter(this.scanView, this.classificationView, this.recommendationView, this);
+            this.scanPresenter = new ScanPresenter(
+                this.scanView, 
+                this.classificationView, 
+                this.recommendationView, 
+                this
+            );
             
+            // DIUBAH: Tambahkan rute baru untuk riwayat
             this.routes = {
                 'auth': { presenter: this.authPresenter },
                 'dashboard': { view: this.dashboardView },
                 'scan': { presenter: this.scanPresenter },
+                'history': { presenter: this.historyPresenter },
             };
 
             this.handleInitialRoute();
@@ -205,5 +209,5 @@ class AppRouter {
 
 export function initializeApp() {
     new AppRouter('app');
-    console.log('Aplikasi SmartWaste (MVP + Netlify Identity) telah diinisialisasi.');
+    console.log('Aplikasi SmartWaste (MVP + Netlify Identity + History) telah diinisialisasi.');
 }
