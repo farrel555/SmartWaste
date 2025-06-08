@@ -1,97 +1,110 @@
+// webpack.config.js (Versi Final untuk Netlify Identity & PWA)
+
 const path = require('path');
+const webpack = require('webpack');
+const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 
-// Ini adalah fungsi yang akan diekspor. Webpack akan memanggilnya dan
-// meneruskan argumen CLI seperti '--mode development' atau '--mode production'
-module.exports = (env, argv) => {
-  // Tentukan mode berdasarkan argv yang diberikan oleh Webpack CLI
-  // Default ke 'development' jika tidak ditentukan (misal saat menjalankan 'webpack serve' tanpa --mode)
-  const isProduction = argv.mode === 'production';
-  const mode = argv.mode || 'development';
-
-  // --- Konfigurasi Umum (Common Configuration) ---
-  // Bagian ini berlaku untuk mode pengembangan dan produksi.
-  const commonConfig = {
-    mode: mode, // Akan menjadi 'development' atau 'production'
-    entry: {
-      main: './src/scripts/index.js', // PATH ini diasumsikan sudah benar sesuai diskusi sebelumnya
-    },
+// --- Konfigurasi Umum (Berlaku untuk semua mode) ---
+const commonConfig = {
+    // Titik masuk utama aplikasi Anda
+    entry: './src/scripts/index.js',
     output: {
-      filename: isProduction ? '[name].[contenthash].js' : '[name].bundle.js',
-      path: path.resolve(__dirname, 'dist'),
-      clean: true,
-      publicPath: '/'
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'bundle.[contenthash].js', // Nama file unik untuk cache busting di production
+        clean: true, // Otomatis membersihkan folder 'dist' sebelum build
+        publicPath: '/',
     },
     module: {
-      rules: [
-        {
-          test: /\.css$/i,
-          use: ['style-loader', 'css-loader'],
-        },
-        {
-          test: /\.js$/,
-          exclude: /node_modules/,
-          use: {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env']
-            }
-          }
-        }
-      ],
+        rules: [
+            {
+                test: /\.css$/i,
+                use: ['style-loader', 'css-loader'],
+            },
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env'],
+                    },
+                },
+            },
+        ],
     },
     plugins: [
-      new HtmlWebpackPlugin({
-        // PERBAIKI PATH INI: Asumsi public/index.html berada di root proyek
-        template: './src/public/index.html',
-        filename: 'index.html',
-        inject: 'body',
-      }),
-      new InjectManifest({
-        // PERBAIKI PATH INI: Asumsi service-worker.js berada di root 'src/'
-        // Jika Anda menamainya 'sw.js' dan itu di 'src/', gunakan './src/sw.js'
-        // Jika Anda memindahkannya ke 'public/' di root, maka 'public/sw.js'
-        // Namun, lokasi standar untuk SW source adalah di 'src/'.
-        swSrc: './src/public/sw.js', // Ganti 'sw.js' ke 'service-worker.js' jika itu nama file Anda
-        swDest: 'sw.js', // Ganti 'sw.js' ke 'service-worker.js' agar konsisten
-        exclude: [
-          /\.map$/,
-          /manifest\.json$/,
-          /\.DS_Store$/
-        ],
-      }),
+        // Membuat file index.html di 'dist' dari template
+        new HtmlWebpackPlugin({
+            template: './src/index.html', // Path ke template HTML Anda
+            filename: 'index.html',
+        }),
+        // Menyalin semua file dari folder 'public' ke folder 'dist'
+        new CopyWebpackPlugin({
+            patterns: [
+                { from: 'public', to: '.' },
+            ],
+        }),
     ],
-  };
+};
 
-  // --- Konfigurasi Spesifik Pengembangan (Development-Specific Configuration) ---
-  if (!isProduction) {
-    console.log('--- Webpack: Building for DEVELOPMENT ---');
-    Object.assign(commonConfig, {
-      devtool: 'eval-source-map',
-      devServer: {
-        // PATH INI SUDAH BENAR: 'public' di root proyek
+// --- Konfigurasi Khusus Development ---
+const devConfig = {
+    mode: 'development',
+    devtool: 'eval-source-map',
+    devServer: {
         static: {
-          directory: path.join(__dirname, 'public'),
-          publicPath: '/'
+            // Menyajikan file statis dari folder 'public' saat development
+            directory: path.resolve(__dirname, 'public'),
         },
         compress: true,
         port: 8080,
-        historyApiFallback: true,
-      },
-    });
-  }
+        open: true,
+        historyApiFallback: true, // Penting untuk Single Page Application
+    },
+    output: {
+        filename: 'bundle.js', // Nama file lebih sederhana untuk development
+    },
+};
 
-  // --- Konfigurasi Spesifik Produksi (Production-Specific Configuration) ---
-  if (isProduction) {
-    console.log('--- Webpack: Building for PRODUCTION ---');
-    Object.assign(commonConfig, {
-      devtool: 'source-map',
-      optimization: {
-        minimize: true,
-      },
-    });
-  }
+// --- Konfigurasi Khusus Production ---
+const prodConfig = {
+    mode: 'production',
+    devtool: 'source-map',
+    optimization: {
+        minimize: true, // Mengecilkan ukuran file
+        splitChunks: {
+            chunks: 'all', // Memisahkan library ke file terpisah
+        },
+    },
+    plugins: [
+        // Service Worker HANYA diaktifkan untuk build production
+        new InjectManifest({
+            swSrc: './src/sw.js', // Path ke source code service worker Anda
+            swDest: 'sw.js',     // Nama file service worker di folder output
+        }),
+    ],
+};
 
-  return commonConfig;
+// --- Logika Utama untuk Menggabungkan Konfigurasi ---
+module.exports = (env, argv) => {
+    const isProduction = argv.mode === 'production';
+
+    // Menambahkan DefinePlugin untuk menyediakan process.env.NODE_ENV ke kode frontend
+    // Diambil dari mode yang sedang berjalan
+    commonConfig.plugins.push(
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(argv.mode),
+        })
+    );
+
+    if (isProduction) {
+        console.log('--- Menjalankan build untuk PRODUCTION ---');
+        return merge(commonConfig, prodConfig);
+    } else {
+        console.log('--- Menjalankan server untuk DEVELOPMENT ---');
+        return merge(commonConfig, devConfig);
+    }
 };

@@ -1,0 +1,74 @@
+{
+    "name": "SmartWaste - Kelola Limbah Pintar",
+    "short_name": "SmartWaste",
+    "description": "Aplikasi cerdas untuk pengelolaan limbah, klasifikasi sampah via kamera, dan rekomendasi daur ulang.",
+    "lang": "id-ID",
+    "start_url": "/index.html?source=pwa",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#f0f2f5",
+    "theme_color": "#4CAF50",
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icons/icon-maskable-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/screenshots/screenshot-desktop.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Tampilan Dashboard SmartWaste"
+        },
+        {
+            "src": "/screenshots/screenshot-mobile.png",
+            "sizes": "720x1280",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Tampilan Scan Sampah SmartWaste"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Scan Sampah Baru",
+            "short_name": "Scan",
+            "description": "Langsung buka kamera untuk scan sampah",
+            "url": "/#scan",
+            "icons": [{ "src": "/icons/shortcut-scan.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "Lihat Riwayat Scan",
+            "short_name": "Riwayat",
+            "description": "Lihat semua riwayat hasil scan Anda",
+            "url": "/#history",
+            "icons": [{ "src": "/icons/shortcut-history.png", "sizes": "96x96" }]
+        }
+    ],
+    "prefer_related_applications": false,
+    "display_override": [
+        "standalone"
+    ]
+}

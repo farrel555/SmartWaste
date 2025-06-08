@@ -1,12 +1,12 @@
-// src/scripts/pages/views/ScanView.js
+// src/scripts/pages/views/ScanView.js (Versi Perbaikan)
 
 import BaseView from './BaseView';
 
 class ScanView extends BaseView {
     constructor(containerId) {
         super(containerId);
-        this.cameraHandler = null;
-        this.uploadHandler = null;
+        // Handler akan di-set oleh presenter
+        this.fileHandler = null; 
     }
 
     render() {
@@ -18,50 +18,52 @@ class ScanView extends BaseView {
                 </div>
 
                 <h2>Pilih gambar sampah untuk di-scan</h2>
+
                 <div class="scan-option" id="camera-option">
                     <i class="fas fa-camera"></i>
                     <p>Gunakan Kamera</p>
                 </div>
+
                 <div class="scan-option" id="upload-option">
                     <i class="fas fa-upload"></i>
-                    <p>Unggah Gambar Sampah</p>
-                    <input type="file" id="upload-input" accept="image/*" style="display: none;">
+                    <p>Unggah Gambar dari Galeri</p>
                 </div>
+                
+                <input type="file" id="file-input" accept="image/*" style="display: none;">
             </div>
         `;
         this.bindEvents();
     }
 
     bindEvents() {
+        const fileInput = this.container.querySelector('#file-input');
+
+        // Saat opsi "Gunakan Kamera" diklik
         this.bind('click', '#camera-option', () => {
-            if (this.cameraHandler) {
-                this.cameraHandler();
-            }
+            // Atribut 'capture' akan memberitahu browser untuk membuka kamera
+            fileInput.setAttribute('capture', 'environment');
+            fileInput.click(); // Memicu klik pada input file
         });
 
+        // Saat opsi "Unggah Gambar" diklik
         this.bind('click', '#upload-option', () => {
-            this.container.querySelector('#upload-input').click();
+            // Hapus atribut 'capture' agar browser membuka galeri file
+            fileInput.removeAttribute('capture');
+            fileInput.click(); // Memicu klik pada input file
         });
 
-        this.bind('change', '#upload-input', (event) => {
-            if (this.uploadHandler && event.target.files.length > 0) {
-                this.uploadHandler(event.target.files[0]);
+        // Saat pengguna telah memilih file (baik dari kamera maupun galeri)
+        this.bind('change', '#file-input', (event) => {
+            if (this.fileHandler && event.target.files && event.target.files.length > 0) {
+                const file = event.target.files[0];
+                this.fileHandler(file); // Kirim file ke presenter untuk diproses
             }
         });
     }
 
-    setCameraHandler(handler) {
-        this.cameraHandler = handler;
-    }
-
-    setUploadHandler(handler) {
-        this.uploadHandler = handler;
-    }
-
-    showMessage(message, type = 'success') {
-        // Implementasi untuk menampilkan pesan (misal, di bawah form)
-        console.log(`ScanView Message (${type}): ${message}`);
-        // Anda mungkin ingin menambahkan elemen pesan di sini juga
+    // Metode untuk presenter agar bisa 'mendengarkan' event dari view ini
+    setFileHandler(handler) {
+        this.fileHandler = handler;
     }
 }
 
