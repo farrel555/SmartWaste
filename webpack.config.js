@@ -1,15 +1,15 @@
-// webpack.config.js (Versi Final)
+// webpack.config.js (Versi Definitif)
 
 const path = require('path');
-const webpack = require('webpack');
+const webpack = require('webpack'); // Pastikan webpack di-impor
 const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
+const Dotenv = require('dotenv-webpack'); // Kita gunakan ini untuk cara yang paling stabil
 
-// --- Konfigurasi Umum (Berlaku untuk semua mode) ---
+// --- Konfigurasi Umum ---
 const commonConfig = {
-    // Titik masuk utama aplikasi Anda, sesuai file index.js Anda
     entry: './src/scripts/index.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -28,37 +28,30 @@ const commonConfig = {
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
-                    options: {
-                        presets: ['@babel/preset-env'],
-                    },
+                    options: { presets: ['@babel/preset-env'] },
                 },
             },
         ],
     },
     plugins: [
-        // Membuat file index.html di 'dist' dari template
         new HtmlWebpackPlugin({
-            // Asumsi template HTML utama Anda ada di src/index.html
             template: './src/index.html',
             filename: 'index.html',
         }),
-        // Menyalin semua file dari folder 'public' ke folder 'dist'
         new CopyWebpackPlugin({
-            patterns: [
-                { from: 'public', to: '.' },
-            ],
+            patterns: [{ from: 'public', to: '.' }],
         }),
+        // Gunakan Dotenv untuk memuat variabel dari file .env
+        new Dotenv(),
     ],
 };
 
-// --- Konfigurasi Khusus Development ---
+// --- Konfigurasi Development ---
 const devConfig = {
     mode: 'development',
     devtool: 'eval-source-map',
     devServer: {
-        static: {
-            directory: path.resolve(__dirname, 'public'),
-        },
+        static: { directory: path.resolve(__dirname, 'public') },
         compress: true,
         port: 8080,
         open: true,
@@ -69,46 +62,22 @@ const devConfig = {
     },
 };
 
-// --- Konfigurasi Khusus Production ---
+// --- Konfigurasi Production ---
 const prodConfig = {
     mode: 'production',
     devtool: 'source-map',
-    optimization: {
-        minimize: true,
-        splitChunks: {
-            chunks: 'all',
-        },
-    },
     plugins: [
-        // InjectManifest hanya untuk build production
         new InjectManifest({
-            // Path ke source code service worker Anda. Ganti jika nama filenya beda.
             swSrc: './src/sw.js',
             swDest: 'sw.js',
         }),
     ],
 };
 
-// --- Logika Utama untuk Menggabungkan Konfigurasi ---
+// --- Logika Utama ---
 module.exports = (env, argv) => {
-    const isProduction = argv.mode === 'production';
-    const modeConfig = isProduction ? prodConfig : devConfig;
-
-    // Membuat objek konfigurasi khusus untuk DefinePlugin
-    const envConfig = {
-        plugins: [
-            new webpack.DefinePlugin({
-                'process.env.NODE_ENV': JSON.stringify(argv.mode),
-            }),
-        ],
-    };
-
-    if (isProduction) {
-        console.log('--- Menjalankan build untuk PRODUCTION ---');
-    } else {
-        console.log('--- Menjalankan server untuk DEVELOPMENT ---');
+    if (argv.mode === 'production') {
+        return merge(commonConfig, prodConfig);
     }
-
-    // Gabungkan semua konfigurasi: umum, spesifik mode, dan plugin environment
-    return merge(commonConfig, modeConfig, envConfig);
+    return merge(commonConfig, devConfig);
 };
