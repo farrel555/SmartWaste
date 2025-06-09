@@ -75,12 +75,6 @@ registerRoute(
   })
 );
 
-// Mengaktifkan navigasi offline (jika ingin menampilkan halaman offline kustom)
-// self.addEventListener('fetch', (event) => {
-//   if (event.request.mode === 'navigate' && !navigator.onLine) {
-//     event.respondWith(caches.match('/offline.html')); // Ganti dengan halaman offline Anda
-//   }
-// });
 
 // Pastikan service worker mengontrol halaman secepatnya
 self.addEventListener('install', (event) => {

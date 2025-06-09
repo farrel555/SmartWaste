@@ -25,6 +25,7 @@
     "workbox-webpack-plugin": "^7.3.0"
   },
   "dependencies": {
-    "@netlify/blobs": "^9.1.6"
+    "@netlify/blobs": "^9.1.6",
+    "node-fetch": "^2.7.0"
   }
 }

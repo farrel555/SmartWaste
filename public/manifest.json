@@ -11,25 +11,25 @@
     "theme_color": "#4CAF50",
     "icons": [
         {
-            "src": "/icons/icon-192x192.png",
+            "src": "/icons/icon.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/icons/icon-512x512.png",
+            "src": "/icons/icon.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/icons/icon-maskable-192x192.png",
+            "src": "/icons/icon.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "/icons/icon-maskable-512x512.png",
+            "src": "/icons/icon.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
@@ -37,14 +37,14 @@
     ],
     "screenshots": [
         {
-            "src": "/screenshots/screenshot-desktop.png",
+            "src": "/image/Screenshot-desktop.png",
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide",
             "label": "Tampilan Dashboard SmartWaste"
         },
         {
-            "src": "/screenshots/screenshot-mobile.png",
+            "src": "/image/Screenshot-scan.png",
             "sizes": "720x1280",
             "type": "image/png",
             "form_factor": "narrow",
@@ -57,14 +57,14 @@
             "short_name": "Scan",
             "description": "Langsung buka kamera untuk scan sampah",
             "url": "/#scan",
-            "icons": [{ "src": "/icons/shortcut-scan.png", "sizes": "96x96" }]
+            "icons": [{ "src": "/icons/Kamera.png", "sizes": "96x96" }]
         },
         {
             "name": "Lihat Riwayat Scan",
             "short_name": "Riwayat",
             "description": "Lihat semua riwayat hasil scan Anda",
             "url": "/#history",
-            "icons": [{ "src": "/icons/shortcut-history.png", "sizes": "96x96" }]
+            "icons": [{ "src": "/icons/Riwayat.png", "sizes": "96x96" }]
         }
     ],
     "prefer_related_applications": false,

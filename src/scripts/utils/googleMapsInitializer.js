@@ -1,26 +1,27 @@
-// src/utils/googleMapsInitializer.js
+// src/utils/googleMapsInitializer.js (Versi Final)
 
-const API_KEY = 'AIzaSyCWvYV88IJm5yprtKdbkGkY3PgHK8BcX9A'; // Ganti dengan kunci API Google Maps Anda yang sebenarnya!
+// Ganti dengan kunci API Google Maps Anda yang sebenarnya!
+// Sebaiknya, kunci ini juga diambil dari environment variable agar tidak terekspos di repository
+const API_KEY = process.env.YOUR_FRONTEND_Maps_KEY; 
 
-let googleMapsApiLoaded = false; // Flag untuk memastikan API hanya dimuat sekali
+let googleMapsApiLoaded = false;
 
-// Fungsi untuk memuat Google Maps API secara dinamis
 function loadGoogleMapsScript() {
     return new Promise((resolve, reject) => {
         if (googleMapsApiLoaded) {
-            resolve(); // API sudah dimuat sebelumnya
+            resolve();
             return;
         }
 
         if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-            // API sudah dimuat tetapi flag belum di-set
             googleMapsApiLoaded = true;
             resolve();
             return;
         }
 
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMapPlaceholder`;
+        // REKOMENDASI: Tambahkan library `marker` untuk fitur Clustering
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMapPlaceholder&libraries=marker`;
         script.async = true;
         script.defer = true;
         script.onerror = () => reject(new Error('Gagal memuat Google Maps API'));
@@ -34,62 +35,50 @@ function loadGoogleMapsScript() {
     });
 }
 
-// Fungsi untuk mengambil data bank sampah dari backend (CONTOH)
 async function fetchWasteBankLocations() {
     try {
-        // Ganti URL ini dengan endpoint API backend Anda yang sebenarnya
-        // yang mengembalikan daftar bank sampah di seluruh Indonesia
-        const response = await fetch('https://api.yourdomain.com/waste-banks-indonesia'); 
+        const response = await fetch('/.netlify/functions/get-waste-banks'); 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Gagal memuat data: ${response.statusText}`);
         }
-        const data = await response.json();
-        return data; // Harusnya berupa array objek { lat, lng, name, address }
+        const locations = await response.json();
+        return locations;
     } catch (error) {
         console.error('Gagal mengambil data bank sampah:', error);
-        return []; // Kembalikan array kosong jika gagal
+        return [];
     }
 }
 
-
-// Fungsi untuk menginisialisasi dan menampilkan peta bank sampah
 export async function initWasteBankMap(mapContainerId) {
     try {
-        await loadGoogleMapsScript(); // Pastikan API sudah dimuat
+        await loadGoogleMapsScript();
 
         const mapContainer = document.getElementById(mapContainerId);
         if (!mapContainer) {
             throw new Error(`Elemen dengan ID '${mapContainerId}' tidak ditemukan.`);
         }
-
-        // Jika Anda ingin membersihkan konten "Loading map..."
         mapContainer.innerHTML = ''; 
 
-        // Koordinator untuk titik tengah Indonesia (misalnya di sekitar Jawa Tengah)
-        // Zoom level yang cocok untuk melihat seluruh Indonesia (sekitar 5-6)
         const initialLocationIndonesia = { lat: -2.548926, lng: 118.014863 }; 
         const map = new google.maps.Map(mapContainer, {
-            zoom: 5, // Zoom level 5 biasanya cukup baik untuk melihat seluruh Indonesia
+            zoom: 5,
             center: initialLocationIndonesia,
-            // Anda bisa menambahkan opsi lain seperti disableDefaultUI: true, gestureHandling: 'greedy'
         });
 
-        // Ambil data bank sampah dari backend
         const wasteBanks = await fetchWasteBankLocations();
 
         if (wasteBanks.length === 0) {
-            console.warn('Tidak ada data bank sampah yang ditemukan.');
-            // Tampilkan pesan di peta jika tidak ada data
-            mapContainer.innerHTML = '<p style="text-align: center; color: gray;">Tidak ada data bank sampah yang tersedia.</p>';
+            mapContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: gray;">Tidak ada data bank sampah yang tersedia saat ini.</p>';
             return;
         }
 
-        // Tambahkan marker untuk setiap bank sampah yang diambil
-        wasteBanks.forEach(bank => {
-            if (bank.lat && bank.lng && bank.name) { // Pastikan data koordinat dan nama ada
+        // PENYESUAIAN: Buat array untuk menampung semua marker
+        const markers = wasteBanks.map(bank => {
+            if (bank.lat && bank.lng && bank.name) {
                 const marker = new google.maps.Marker({
                     position: { lat: parseFloat(bank.lat), lng: parseFloat(bank.lng) },
-                    map: map,
+                    map: map, // Tetap tampilkan di peta
                     title: bank.name,
                 });
 
@@ -100,16 +89,25 @@ export async function initWasteBankMap(mapContainerId) {
                 marker.addListener("click", () => {
                     infoWindow.open(map, marker);
                 });
-            } else {
-                console.warn('Data bank sampah tidak lengkap:', bank);
-            }
-        });
 
-        console.log(`Peta bank sampah berhasil diinisialisasi dengan ${wasteBanks.length} lokasi.`);
+                return marker; // Kembalikan marker yang sudah dibuat
+            }
+            return null; // Kembalikan null jika data tidak lengkap
+        }).filter(marker => marker !== null); // Filter untuk menghapus data yang tidak lengkap
+
+        // REKOMENDASI: Terapkan Marker Clustering untuk performa
+        // `google.maps.marker.AdvancedMarkerElement` dan `MarkerClusterer` adalah bagian dari library `marker` yang baru.
+        new google.maps.marker.MarkerClusterer({ markers, map });
+        
+        console.log(`Peta bank sampah berhasil diinisialisasi dengan ${markers.length} lokasi.`);
 
     } catch (error) {
         console.error('Terjadi kesalahan saat menginisialisasi peta:', error);
-        // Penting: re-throw error agar bisa ditangani di pemanggil (DashboardView)
-        throw error; 
+        // Tampilkan pesan error di UI agar pengguna tahu ada masalah
+        const mapContainer = document.getElementById(mapContainerId);
+        if (mapContainer) {
+            mapContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: red;">Gagal memuat peta. Silakan coba lagi nanti.</p>';
+        }
+        throw error;
     }
 }
