@@ -2,7 +2,7 @@
 
 import * as tf from '@tensorflow/tfjs';
 
-const MODEL_URL = '/tfjs_model/model.json'; // Path ke model Anda di folder public
+const MODEL_URL = './tfjs_model/model.json'; // Path ke model Anda di folder public
 const IMAGE_SIZE = 150; // Sesuaikan dengan ukuran input model Anda saat training
 const CLASSES = ['Non_Organik', 'Organik']; // Sesuaikan dengan nama kelas Anda
 

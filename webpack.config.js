@@ -1,14 +1,15 @@
-// webpack.config.js (Versi Definitif)
+// webpack.config.js
 
 const path = require('path');
-const webpack = require('webpack'); // Pastikan webpack di-impor
+const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
-const Dotenv = require('dotenv-webpack'); // Kita gunakan ini untuk cara yang paling stabil
 
-// --- Konfigurasi Umum ---
+// Kita tidak lagi memerlukan Dotenv karena menggunakan Netlify Identity
+
+// --- Konfigurasi Umum (Berlaku untuk semua mode) ---
 const commonConfig = {
     entry: './src/scripts/index.js',
     output: {
@@ -17,6 +18,7 @@ const commonConfig = {
         clean: true,
         publicPath: '/',
     },
+    // DIKEMBALIKAN: Aturan untuk memproses file JavaScript dan CSS
     module: {
         rules: [
             {
@@ -28,7 +30,9 @@ const commonConfig = {
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
-                    options: { presets: ['@babel/preset-env'] },
+                    options: {
+                        presets: ['@babel/preset-env'],
+                    },
                 },
             },
         ],
@@ -39,19 +43,22 @@ const commonConfig = {
             filename: 'index.html',
         }),
         new CopyWebpackPlugin({
-            patterns: [{ from: 'public', to: '.' }],
+            patterns: [
+                { from: 'public', to: '.' },
+            ],
         }),
-        // Gunakan Dotenv untuk memuat variabel dari file .env
-        new Dotenv(),
+        // Plugin Dotenv dihapus karena tidak lagi diperlukan
     ],
 };
 
-// --- Konfigurasi Development ---
+// --- Konfigurasi Khusus Development ---
 const devConfig = {
     mode: 'development',
     devtool: 'eval-source-map',
     devServer: {
-        static: { directory: path.resolve(__dirname, 'public') },
+        static: {
+            directory: path.resolve(__dirname, 'public'),
+        },
         compress: true,
         port: 8080,
         open: true,
@@ -62,10 +69,17 @@ const devConfig = {
     },
 };
 
-// --- Konfigurasi Production ---
+// --- Konfigurasi Khusus Production ---
 const prodConfig = {
     mode: 'production',
     devtool: 'source-map',
+    // DIKEMBALIKAN: Opsi optimisasi untuk production build
+    optimization: {
+        minimize: true,
+        splitChunks: {
+            chunks: 'all',
+        },
+    },
     plugins: [
         new InjectManifest({
             swSrc: './src/sw.js',
@@ -74,10 +88,26 @@ const prodConfig = {
     ],
 };
 
-// --- Logika Utama ---
+// --- Logika Utama untuk Menggabungkan Konfigurasi ---
 module.exports = (env, argv) => {
-    if (argv.mode === 'production') {
-        return merge(commonConfig, prodConfig);
+    const isProduction = argv.mode === 'production';
+    const modeConfig = isProduction ? prodConfig : devConfig;
+
+    // Konfigurasi untuk DefinePlugin (diperlukan agar 'process.env.NODE_ENV' berfungsi di PWA)
+    const envConfig = {
+        plugins: [
+            new webpack.DefinePlugin({
+                'process.env.NODE_ENV': JSON.stringify(argv.mode),
+            }),
+        ],
+    };
+
+    if (isProduction) {
+        console.log('--- Menjalankan build untuk PRODUCTION ---');
+    } else {
+        console.log('--- Menjalankan server untuk DEVELOPMENT ---');
     }
-    return merge(commonConfig, devConfig);
+
+    // Gabungkan semua konfigurasi yang relevan
+    return merge(commonConfig, modeConfig, envConfig);
 };
