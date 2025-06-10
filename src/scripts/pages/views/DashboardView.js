@@ -1,8 +1,8 @@
-// src/scripts/pages/views/DashboardView.js (Versi Perbaikan)
+// src/scripts/pages/views/DashboardView.js
 
 import BaseView from './BaseView';
-// BARU: Impor fungsi inisialisasi peta yang sudah kita buat
-import { initWasteBankMap } from '../../utils/googleMapsInitializer';
+// DIUBAH: Impor fungsi initWasteBankMap dari file Leaflet yang baru
+import { initWasteBankMap } from '../../utils/openMapsInitializer';
 
 class DashboardView extends BaseView {
     constructor(containerId) {
@@ -35,7 +35,11 @@ class DashboardView extends BaseView {
 
                 <h2>Tipe-Tipe Sampah</h2>
                 <div class="waste-type-grid">
-                    </div>
+                    <div class="waste-type-item" data-type="organik">Organik</div>
+                    <div class="waste-type-item" data-type="anorganik">Anorganik</div>
+                    <div class="waste-type-item" data-type="b3">B3</div>
+                    <div class="waste-type-item" data-type="residu">Residu</div>
+                </div>
                 <div id="explanation-container">
                     </div>
                 
@@ -45,7 +49,14 @@ class DashboardView extends BaseView {
                 
                 <h2>Edukasi Pengelolaan Sampah</h2>
                 <div class="education-chart-section">
+                    <p>Berikut adalah visualisasi sederhana mengenai komposisi sampah dan titik edukasi:</p>
+                    <div class="chart-placeholder">
+                        <div class="bar-chart-container">
+                            ${chartBarsHtml}
+                        </div>
+                        <p class="chart-description">Komposisi sampah nasional berdasarkan data KLHK (2023).</p>
                     </div>
+                </div>
                 
                 <h2>Lokasi Bank Sampah Terdekat</h2>
                 <div id="map-container" class="map-container">
@@ -54,25 +65,23 @@ class DashboardView extends BaseView {
 
                 <h2>Anggota Kelompok</h2>
                 <div class="team-members">
-                   </div>
+                   <div class="member-item"><i class="fas fa-user-circle"></i><span>Carlos Agunar Da Costa</span></div>
+                   <div class="member-item"><i class="fas fa-user-circle"></i><span>Azmi Farrel</span></div>
+                   <div class="member-item"><i class="fas fa-user-circle"></i><span>Sayyidina Ali</span></div>
+                   <div class="member-item"><i class="fas fa-user-circle"></i><span>Arya Mulahernawan</span></div>
+                </div>
             </div>
         `;
         
-        // Panggil event-event yang sudah ada
         this.bindEvents();
-        
-        // BARU: Panggil fungsi untuk memuat peta setelah HTML dirender
         this.loadMap();
     }
 
-    /**
-     * (BARU) Fungsi untuk memanggil inisialisasi peta secara asynchronous.
-     */
     async loadMap() {
         try {
             // Panggil fungsi initWasteBankMap dan berikan ID dari div wadah peta
             await initWasteBankMap('map-container');
-            console.log("Peta berhasil dimuat di DashboardView.");
+            console.log("Peta Leaflet berhasil dimuat di DashboardView.");
         } catch (error) {
             console.error("Gagal memuat peta dari DashboardView:", error);
             // Pesan error sudah ditangani di dalam initWasteBankMap
