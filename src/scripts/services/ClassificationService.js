@@ -1,9 +1,12 @@
-// src/scripts/services/ClassificationService.js (Versi Perbaikan Final)
+// src/scripts/services/ClassificationService.js
 
 import * as tf from '@tensorflow/tfjs';
 
-const MODEL_URL = '/tfjs_model/model.json';
-const IMAGE_SIZE = 224; // DIUBAH: Sesuaikan dengan input shape model Anda (224x224)
+// Path ke model Anda di folder public
+const MODEL_URL = '/tfjs_model/model.json'; 
+// Ukuran input gambar sesuai dengan yang Anda gunakan saat training (224x224)
+const IMAGE_SIZE = 224; 
+// Kelas klasifikasi Anda, sesuai dengan README.md
 const CLASSES = ['Non_Organik', 'Organik'];
 
 class ClassificationService {
@@ -11,13 +14,16 @@ class ClassificationService {
         this.model = null;
     }
 
+    /**
+     * Memuat model TensorFlow.js. Hanya dijalankan sekali.
+     */
     async loadModel() {
         if (this.model) {
             return;
         }
         try {
-            console.log('Memuat model...');
-            // DIUBAH: Gunakan loadLayersModel, bukan loadGraphModel
+            console.log('Memuat model dari:', MODEL_URL);
+            // DIUBAH: Gunakan loadLayersModel sesuai format model.json Anda
             this.model = await tf.loadLayersModel(MODEL_URL);
             console.log('Model berhasil dimuat.');
         } catch (error) {
@@ -26,9 +32,13 @@ class ClassificationService {
         }
     }
 
+    /**
+     * Mengubah gambar menjadi tensor yang bisa dibaca oleh model.
+     * @param {HTMLImageElement} imageElement - Elemen gambar yang akan diproses.
+     * @returns {tf.Tensor}
+     */
     preprocessImage(imageElement) {
         const tensor = tf.browser.fromPixels(imageElement)
-            // DIUBAH: Sesuaikan ukuran resize dengan model Anda
             .resizeNearestNeighbor([IMAGE_SIZE, IMAGE_SIZE])
             .toFloat()
             .div(tf.scalar(255.0))
@@ -36,25 +46,33 @@ class ClassificationService {
         return tensor;
     }
 
+    /**
+     * Mengirim data gambar untuk diklasifikasi oleh model yang sudah dimuat.
+     * @param {string} imageSrc - Data gambar dalam format base64 data URL.
+     * @returns {Promise<object>} Objek hasil klasifikasi.
+     */
     async classifyImage(imageSrc) {
         await this.loadModel();
 
         return new Promise((resolve, reject) => {
             const imageElement = new Image();
             imageElement.src = imageSrc;
-            imageElement.crossOrigin = "anonymous"; // Tambahkan ini untuk menghindari error CORS
+            imageElement.crossOrigin = "anonymous"; // Praktik terbaik untuk mencegah error CORS
 
             imageElement.onload = async () => {
                 try {
                     const tensor = this.preprocessImage(imageElement);
+                    // Lakukan prediksi
                     const predictions = await this.model.predict(tensor).data();
                     
+                    // Interpretasikan hasil dari output layer sigmoid (1 neuron)
                     const confidence = predictions[0];
-                    const predictedIndex = confidence < 0.5 ? 0 : 1;
+                    const predictedIndex = confidence < 0.5 ? 0 : 1; // 0 untuk Non_Organik, 1 untuk Organik
                     const wasteType = CLASSES[predictedIndex];
 
                     console.log(`Hasil Prediksi: ${wasteType}, Skor Kepercayaan: ${confidence}`);
 
+                    // Bersihkan memori tensor untuk mencegah memory leak
                     tensor.dispose();
 
                     resolve({
