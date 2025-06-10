@@ -1,0 +1,15 @@
+# netlify.toml
+
+[build]
+  # Direktori tempat Netlify akan mencari fungsi Anda
+  functions = "netlify/functions"
+  # Direktori output setelah 'npm run build' selesai
+  publish = "dist"
+
+[dev]
+  # Perintah untuk menjalankan server frontend (webpack-dev-server)
+  command = "npm run start"
+  # Port tempat frontend Anda berjalan
+  targetPort = 8080
+  # Direktori yang disajikan oleh dev server
+  publish = "dist"
