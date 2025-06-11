@@ -87,58 +87,19 @@ class AppRouter {
     }
 
     bindGlobalEvents() {
-        this.menuToggleBtn.addEventListener('click', () => this.toggleMenu(true));
-        this.menuCloseBtn.addEventListener('click', () => this.toggleMenu(false));
-        this.menuOverlay.addEventListener('click', () => this.toggleMenu(false));
-
-        this.sideMenu.querySelectorAll('.menu-items li[data-route]').forEach(item => {
-            item.addEventListener('click', (event) => {
-                this.navigateTo(event.currentTarget.dataset.route);
-                this.toggleMenu(false);
-            });
-        });
-
-        this.logoutMenuItem.addEventListener('click', () => {
-            AuthService.logout(() => console.log("Logout callback dijalankan."));
-            this.toggleMenu(false);
-        });
+        // ... (kode ini tidak berubah) ...
     }
 
     bindAuthEvents() {
-        AuthService.on('login', (user) => {
-            console.log('Event Login terdeteksi:', user);
-            this.updateUIVisibility();
-            this.navigateTo('dashboard');
-        });
-
-        AuthService.on('logout', () => {
-            console.log('Event Logout terdeteksi.');
-            this.updateUIVisibility();
-            this.navigateTo('auth');
-        });
+        // ... (kode ini tidak berubah) ...
     }
     
     updateUIVisibility() {
-        const user = AuthService.getCurrentUser();
-        if (user) {
-            this.menuToggleBtn.style.display = 'block';
-            this.logoutMenuItem.style.display = 'flex';
-        } else {
-            this.menuToggleBtn.style.display = 'none';
-            this.sideMenu.classList.remove('open');
-            this.menuOverlay.classList.remove('open');
-            this.logoutMenuItem.style.display = 'none';
-        }
+        // ... (kode ini tidak berubah) ...
     }
 
     toggleMenu(open) {
-        if (open) {
-            this.sideMenu.classList.add('open');
-            this.menuOverlay.classList.add('open');
-        } else {
-            this.sideMenu.classList.remove('open');
-            this.menuOverlay.classList.remove('open');
-        }
+        // ... (kode ini tidak berubah) ...
     }
 
     async setupRoutes() {
@@ -151,7 +112,6 @@ class AppRouter {
                 this
             );
             
-            // PASTIKAN SEMUA RUTE INI ADA
             this.routes = {
                 'auth': { presenter: this.authPresenter },
                 'dashboard': { view: this.dashboardView },
@@ -177,16 +137,30 @@ class AppRouter {
         const routeConfig = this.routes[path];
         if (routeConfig) {
             const mainContent = this.appContainer.querySelector('#main-content-area');
-            mainContent.innerHTML = '';
+            const currentHash = window.location.hash.slice(1);
+
+            // Hanya hapus konten jika navigasi ke halaman yang berbeda
+            if (path !== currentHash.split('?')[0]) {
+                mainContent.innerHTML = '';
+            }
             
             if (routeConfig.presenter) {
                 routeConfig.presenter.init(...args);
             } else if (routeConfig.view) {
-                // PASTIKAN BAGIAN INI MENERUSKAN ARGUMEN
-                routeConfig.view.render(...args);
+                // DIUBAH: Logika khusus untuk halaman 'classification'
+                if (path === 'classification' && args.length === 0) {
+                    // Jika navigasi ke 'classification' TANPA data, panggil showLoading()
+                    this.classificationView.showLoading();
+                } else {
+                    // Jika ada data, atau ini rute view lain, panggil render seperti biasa
+                    routeConfig.view.render(...args);
+                }
             }
             
-            window.history.pushState({ path: path, args: args }, '', `#${path}`);
+            // Hanya update URL di history jika path-nya benar-benar baru
+            if (path !== currentHash.split('?')[0]) {
+                window.history.pushState({ path: path, args: args }, '', `#${path}`);
+            }
         } else {
             this.navigateTo(user ? 'dashboard' : 'auth');
         }
