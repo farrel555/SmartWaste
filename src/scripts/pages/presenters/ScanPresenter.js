@@ -25,14 +25,14 @@ class ScanPresenter {
      * @param {File} file - Objek file gambar yang dipilih pengguna.
      */
     handleFileSelected(file) {
-        // Tampilkan halaman loading SEGERA setelah file dipilih
+        // 1. Tampilkan halaman loading SEGERA setelah file dipilih
         this.classificationView.showLoading();
-        // Arahkan ke halaman #classification agar URL berubah dan pengguna melihat status loading
+        // 2. Arahkan ke halaman #classification agar URL berubah dan pengguna melihat status loading
         this.appRouter.navigateTo('classification');
 
         const reader = new FileReader();
 
-        // Saat FileReader selesai membaca file
+        // 3. Saat FileReader selesai membaca file, baru mulai klasifikasi
         reader.onload = (event) => {
             const imageSrc = event.target.result; // Ini adalah data base64 dari gambar
             console.log('File berhasil dibaca, memulai klasifikasi...');
@@ -40,10 +40,9 @@ class ScanPresenter {
             this.classifyAndRecommend(imageSrc); 
         };
 
-        // Saat terjadi error saat membaca file
+        // Jika terjadi error saat membaca file itu sendiri
         reader.onerror = (error) => {
             console.error("Error membaca file:", error);
-            // Tampilkan error di halaman klasifikasi
             this.classificationView.showError("Gagal memuat file gambar. Silakan coba lagi.");
         };
 
@@ -54,12 +53,12 @@ class ScanPresenter {
     async classifyAndRecommend(imageSrc) {
         try {
             // Kita sudah berada di halaman #classification yang menampilkan loading.
-            // Sekarang kita langsung proses gambarnya.
+            // Sekarang kita langsung panggil API backend.
             
             const result = await ClassificationService.classifyImage(imageSrc);
 
             if (result && result.wasteType) {
-                // Simpan hasil ke riwayat
+                // Simpan hasil ke riwayat (jika berhasil)
                 try {
                     await HistoryService.saveScanHistory({
                         imageUrl: imageSrc,
@@ -68,19 +67,21 @@ class ScanPresenter {
                     });
                     console.log('Riwayat scan berhasil disimpan.');
                 } catch (saveError) {
+                    // Jika gagal menyimpan riwayat, jangan hentikan alur. Cukup log error.
                     console.error('Gagal menyimpan riwayat:', saveError);
                 }
 
-                // DIUBAH: Render ulang halaman klasifikasi dengan data hasilnya.
-                // Kita tidak perlu navigateTo() lagi, cukup panggil render dari view yang sudah ada.
+                // Render ulang halaman klasifikasi, kali ini dengan data hasilnya.
+                // Kita tidak menggunakan navigateTo() lagi untuk menghindari refresh halaman.
                 this.classificationView.render(imageSrc, result.wasteType);
 
             } else {
-                throw new Error('Hasil klasifikasi tidak valid.');
+                // Jika API mengembalikan data tanpa 'wasteType'
+                throw new Error('Respons dari API tidak valid.');
             }
         } catch (error) {
             console.error('Error during classification:', error);
-            // Gunakan pesan error yang lebih spesifik jika ada
+            // Tampilkan pesan error yang lebih spesifik kepada pengguna
             this.classificationView.showError(error.message || 'Gagal mengklasifikasi gambar. Silakan coba lagi.');
         }
     }
