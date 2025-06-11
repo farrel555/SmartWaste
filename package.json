@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@netlify/blobs": "^9.1.6",
-    "@tensorflow/tfjs": "^4.22.0",
     "node-fetch": "^2.7.0"
   }
 }
