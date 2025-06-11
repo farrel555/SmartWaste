@@ -1,4 +1,4 @@
-// src/scripts/pages/presenters/ScanPresenter.js (Versi Perbaikan)
+// src/scripts/pages/presenters/ScanPresenter.js
 
 import ClassificationService from '../../services/ClassificationService';
 import HistoryService from '../../services/HistoryService';
@@ -13,36 +13,49 @@ class ScanPresenter {
         this.scanView.presenter = this;
     }
 
+    // Metode ini dipanggil oleh AppRouter saat rute #scan diakses
     init() {
+        // Daftarkan handler di view. Saat view menerima file, ia akan memanggil 'handleFileSelected'
         this.scanView.setFileHandler(this.handleFileSelected.bind(this));
         this.scanView.render();
     }
 
+    /**
+     * Metode ini dipanggil oleh ScanView saat pengguna memilih file.
+     * @param {File} file - Objek file gambar yang dipilih pengguna.
+     */
     handleFileSelected(file) {
+        // Tampilkan halaman loading SEGERA setelah file dipilih
+        this.classificationView.showLoading();
+        // Arahkan ke halaman klasifikasi agar pengguna melihat status loading
+        this.appRouter.navigateTo('classification');
+
         const reader = new FileReader();
 
+        // Saat FileReader selesai membaca file
         reader.onload = (event) => {
-            const imageSrc = event.target.result;
+            const imageSrc = event.target.result; // Ini adalah data base64 dari gambar
             console.log('File berhasil dibaca, memulai klasifikasi...');
+            // Panggil metode klasifikasi dengan data gambar
             this.classifyAndRecommend(imageSrc); 
         };
 
+        // Saat terjadi error saat membaca file
         reader.onerror = (error) => {
             console.error("Error membaca file:", error);
-            // Anda mungkin ingin menampilkan pesan error di ScanView di sini
+            // Tampilkan error di halaman klasifikasi
+            this.classificationView.showError("Gagal memuat file gambar. Silakan coba lagi.");
         };
 
+        // Mulai proses pembacaan file
         reader.readAsDataURL(file);
     }
 
     async classifyAndRecommend(imageSrc) {
         try {
-            // Tampilkan loading di halaman klasifikasi sementara proses berjalan
-            this.classificationView.showLoading();
+            // Kita sudah menampilkan loading dan navigasi di handleFileSelected,
+            // jadi kita bisa langsung melakukan klasifikasi.
             
-            // DIHAPUS: Panggilan navigateTo('classification') yang pertama dihapus dari sini
-            // untuk mencegah navigasi ganda.
-
             const result = await ClassificationService.classifyImage(imageSrc);
 
             if (result && result.wasteType) {
@@ -58,8 +71,9 @@ class ScanPresenter {
                     console.error('Gagal menyimpan riwayat:', saveError);
                 }
 
-                // Arahkan ke halaman klasifikasi HANYA SEKALI di sini, dengan membawa data hasilnya
-                this.appRouter.navigateTo('classification', imageSrc, result.wasteType);
+                // Render ulang halaman klasifikasi, kali ini dengan data hasilnya
+                // Kita tidak menggunakan navigateTo lagi untuk menghindari refresh halaman
+                this.classificationView.render(imageSrc, result.wasteType);
             } else {
                 throw new Error('Hasil klasifikasi tidak valid.');
             }

@@ -1,48 +1,59 @@
 // src/scripts/services/ClassificationService.js
 
-// LANGSUNG TULIS URL API ANDA DI SINI
-// Ganti dengan URL dari Fly.io, Render, atau layanan hosting backend Anda.
-const API_BASE_URL = 'https://smartwaste-api.fly.dev'; 
+const API_BASE_URL = 'https://smartwaste-api.fly.dev';
 
 class ClassificationService {
     /**
-     * Mengirim data gambar ke backend FastAPI untuk diklasifikasi.
-     * @param {string} imageSrc - Data gambar dalam format base64 data URL.
-     * @returns {Promise<object>} Objek hasil klasifikasi.
+     * Helper untuk 'tidur' selama beberapa milidetik.
+     * @param {number} ms - Waktu tunggu dalam milidetik.
      */
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     async classifyImage(imageSrc) {
         console.log(`Mengirim gambar ke backend: ${API_BASE_URL}`);
 
-        try {
-            const fetchRes = await fetch(imageSrc);
-            const blob = await fetchRes.blob();
-            
-            const formData = new FormData();
-            formData.append('file', blob, 'image.jpg');
+        const maxRetries = 3; // Coba maksimal 3 kali
+        const retryDelay = 2000; // Jeda 2 detik antar percobaan
 
-            const response = await fetch(`${API_BASE_URL}/predict`, {
-                method: 'POST',
-                body: formData,
-            });
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const fetchRes = await fetch(imageSrc);
+                const blob = await fetchRes.blob();
+                
+                const formData = new FormData();
+                formData.append('file', blob, 'image.jpg');
 
-            if (!response.ok) {
-                let errorMsg = `Gagal mendapatkan hasil klasifikasi. Status: ${response.status}`;
-                try {
-                    const errorData = await response.json();
-                    errorMsg = errorData.detail || errorMsg;
-                } catch (e) {
-                    // Biarkan pesan error default jika respons bukan JSON
+                const response = await fetch(`${API_BASE_URL}/predict`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.status === 502 && attempt < maxRetries) {
+                    // Jika Bad Gateway, server mungkin sedang bangun. Coba lagi.
+                    console.warn(`Attempt ${attempt}: Server mengembalikan 502. Mencoba lagi dalam ${retryDelay}ms...`);
+                    await this.sleep(retryDelay);
+                    continue; // Lanjutkan ke iterasi loop berikutnya
                 }
-                throw new Error(errorMsg);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Gagal mendapatkan hasil klasifikasi dari API.');
+                }
+
+                const result = await response.json();
+                console.log('Hasil diterima dari FastAPI:', result);
+                return result; // Jika berhasil, keluar dari loop dan kembalikan hasil
+
+            } catch (error) {
+                console.error(`Attempt ${attempt} gagal:`, error);
+                if (attempt >= maxRetries) {
+                    // Jika semua percobaan gagal, teruskan error
+                    throw new Error('Server tidak merespons setelah beberapa kali percobaan. Silakan coba lagi sesaat lagi.');
+                }
+                 await this.sleep(retryDelay); // Tunggu sebelum mencoba lagi
             }
-
-            const result = await response.json();
-            console.log('Hasil diterima dari FastAPI:', result);
-            return result;
-
-        } catch (error) {
-            console.error('Error saat memanggil API klasifikasi:', error);
-            throw error;
         }
     }
 }
