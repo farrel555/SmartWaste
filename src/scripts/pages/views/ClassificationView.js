@@ -7,19 +7,21 @@ class ClassificationView extends BaseView {
         super(containerId);
     }
 
-    /**
-     * Metode utama untuk menampilkan hasil klasifikasi yang berhasil.
-     * @param {string} imageSrc - Sumber gambar yang di-scan (data URL).
-     * @param {string} wasteType - Jenis sampah hasil klasifikasi (misal, 'organik').
-     */
     render(imageSrc, wasteType) {
-        // Teks rekomendasi sederhana berdasarkan jenis sampah
+        // Pengecekan Pengaman: Jika dipanggil tanpa data, jangan lakukan apa-apa.
+        // Tampilan loading/error akan tetap ada.
+        if (!imageSrc || !wasteType) {
+            console.warn("ClassificationView.render dipanggil tanpa data lengkap.");
+            return; 
+        }
+
         let recommendationText = 'Informasi lebih lanjut tidak tersedia.';
+        // Gunakan .toLowerCase() dengan aman di sini
         switch (wasteType.toLowerCase()) {
             case 'organik':
                 recommendationText = 'Sampah ini dapat diolah menjadi kompos atau pakan ternak.';
                 break;
-            case 'anorganik':
+            case 'non_organik':
                 recommendationText = 'Dapat didaur ulang. Pisahkan dan setorkan ke bank sampah.';
                 break;
             case 'b3':
@@ -47,9 +49,6 @@ class ClassificationView extends BaseView {
         this.bindEvents();
     }
 
-    /**
-     * (BARU) Metode untuk menampilkan status loading.
-     */
     showLoading() {
         this.container.innerHTML = `
             <div class="card classification-card">
@@ -62,10 +61,6 @@ class ClassificationView extends BaseView {
         `;
     }
 
-    /**
-     * (BARU) Metode untuk menampilkan pesan error.
-     * @param {string} message - Pesan error yang akan ditampilkan.
-     */
     showError(message) {
         this.container.innerHTML = `
             <div class="card classification-card error-card">
@@ -77,12 +72,12 @@ class ClassificationView extends BaseView {
                 <button class="btn" id="scan-again-btn">Coba Scan Lagi</button>
             </div>
         `;
-        this.bindEvents(); // Bind event untuk tombol "Scan Lagi" di halaman error
+        this.bindEvents();
     }
 
     bindEvents() {
-        // Event listener untuk tombol 'Scan Lagi'
         const scanAgainButton = this.container.querySelector('#scan-again-btn');
+        // Pastikan presenter dan appRouter ada sebelum mengikat event
         if (scanAgainButton && this.presenter && this.presenter.appRouter) {
              this.bind('click', '#scan-again-btn', () => {
                 this.presenter.appRouter.navigateTo('scan');

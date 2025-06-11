@@ -26,22 +26,17 @@ class AppRouter {
         this.routes = {};
         this.currentPresenter = null;
 
-        // 1. Render layout HTML dasar terlebih dahulu
         this.renderGlobalLayout();
-        // 2. Setelah HTML ada, baru cari elemen-elemennya
         this.setupElements();
-        // 3. Inisialisasi Views dan Presenters
         this.setupViewsAndPresenters();
-        // 4. Inisialisasi dan ikat event dari AuthService (Netlify Identity)
+        
         AuthService.init();
         this.bindAuthEvents();
-        // 5. Ikat event-event global ke elemen yang sudah ditemukan
         this.bindGlobalEvents();
-        // 6. Siapkan rute dan navigasi awal (sekarang async)
+        
         this.setupRoutes();
-        // 7. Ikat event popstate untuk navigasi browser
         this.bindPopstateEvent();
-        // 8. Sesuaikan UI berdasarkan status login awal
+        
         this.updateUIVisibility();
     }
 
@@ -156,14 +151,14 @@ class AppRouter {
                 this
             );
             
-            // Menambahkan semua rute yang mungkin diakses
+            // PASTIKAN SEMUA RUTE INI ADA
             this.routes = {
                 'auth': { presenter: this.authPresenter },
                 'dashboard': { view: this.dashboardView },
                 'scan': { presenter: this.scanPresenter },
                 'history': { presenter: this.historyPresenter },
-                'classification': { view: this.classificationView }, // Rute untuk menampilkan hasil
-                'recommendation': { view: this.recommendationView }, // Rute untuk rekomendasi
+                'classification': { view: this.classificationView },
+                'recommendation': { view: this.recommendationView },
             };
 
             this.handleInitialRoute();
@@ -187,6 +182,7 @@ class AppRouter {
             if (routeConfig.presenter) {
                 routeConfig.presenter.init(...args);
             } else if (routeConfig.view) {
+                // PASTIKAN BAGIAN INI MENERUSKAN ARGUMEN
                 routeConfig.view.render(...args);
             }
             
