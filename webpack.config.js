@@ -7,24 +7,24 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 
-// Kita tidak lagi memerlukan Dotenv karena menggunakan Netlify Identity
-
 // --- Konfigurasi Umum (Berlaku untuk semua mode) ---
 const commonConfig = {
+    // Titik masuk utama aplikasi Anda
     entry: './src/scripts/index.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'bundle.[contenthash].js',
-        clean: true,
+        filename: 'bundle.[contenthash].js', // Nama file unik untuk production
+        clean: true, // Otomatis membersihkan folder 'dist' sebelum build
         publicPath: '/',
     },
-    // DIKEMBALIKAN: Aturan untuk memproses file JavaScript dan CSS
     module: {
         rules: [
+            // Aturan untuk memproses file CSS
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],
             },
+            // Aturan untuk memproses file JavaScript modern
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
@@ -38,16 +38,17 @@ const commonConfig = {
         ],
     },
     plugins: [
+        // Membuat file index.html di 'dist' dari template Anda
         new HtmlWebpackPlugin({
             template: './src/index.html',
             filename: 'index.html',
         }),
+        // Menyalin semua file dari folder 'public' ke folder 'dist'
         new CopyWebpackPlugin({
             patterns: [
                 { from: 'public', to: '.' },
             ],
         }),
-        // Plugin Dotenv dihapus karena tidak lagi diperlukan
     ],
 };
 
@@ -65,7 +66,7 @@ const devConfig = {
         historyApiFallback: true,
     },
     output: {
-        filename: 'bundle.js',
+        filename: 'bundle.js', // Nama file lebih sederhana untuk development
     },
 };
 
@@ -73,7 +74,6 @@ const devConfig = {
 const prodConfig = {
     mode: 'production',
     devtool: 'source-map',
-    // DIKEMBALIKAN: Opsi optimisasi untuk production build
     optimization: {
         minimize: true,
         splitChunks: {
@@ -81,6 +81,7 @@ const prodConfig = {
         },
     },
     plugins: [
+        // Service Worker HANYA diaktifkan untuk build production
         new InjectManifest({
             swSrc: './src/sw.js',
             swDest: 'sw.js',
@@ -93,7 +94,7 @@ module.exports = (env, argv) => {
     const isProduction = argv.mode === 'production';
     const modeConfig = isProduction ? prodConfig : devConfig;
 
-    // Konfigurasi untuk DefinePlugin (diperlukan agar 'process.env.NODE_ENV' berfungsi di PWA)
+    // Menambahkan DefinePlugin untuk menyediakan process.env.NODE_ENV
     const envConfig = {
         plugins: [
             new webpack.DefinePlugin({
@@ -108,6 +109,5 @@ module.exports = (env, argv) => {
         console.log('--- Menjalankan server untuk DEVELOPMENT ---');
     }
 
-    // Gabungkan semua konfigurasi yang relevan
     return merge(commonConfig, modeConfig, envConfig);
 };

@@ -1,5 +1,8 @@
 // src/scripts/services/ClassificationService.js
-const API_BASE_URL = 'https://smartwaste-api.fly.dev/'; 
+
+// Mengambil URL API dari environment variable yang disuntikkan oleh Webpack.
+// Jika tidak ada, ia akan menggunakan URL live sebagai fallback.
+const API_BASE_URL = process.env.API_BASE_URL || 'https://smartwaste-api.fly.dev';
 
 class ClassificationService {
     /**
@@ -27,8 +30,15 @@ class ClassificationService {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Gagal mendapatkan hasil klasifikasi dari API.');
+                // Penanganan error yang lebih baik untuk berbagai jenis respons
+                let errorMsg = `Gagal mendapatkan hasil klasifikasi. Status: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.detail || errorMsg;
+                } catch (e) {
+                    // Biarkan pesan error default jika respons bukan JSON
+                }
+                throw new Error(errorMsg);
             }
 
             const result = await response.json();
