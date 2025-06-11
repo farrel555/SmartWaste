@@ -560,20 +560,18 @@ body {
 /* Kontainer Anggota Kelompok */
 .team-members {
     display: grid;
-    /* DIUBAH: Membuat hanya satu kolom agar semua item berbaris ke bawah */
-    grid-template-columns: 1fr; 
-    gap: 10px; /* Jarak antar item bisa sedikit dikurangi untuk tampilan vertikal */
+    grid-template-columns: repeat(2, 1fr); /* 2 kolom */
+    gap: 15px;
     margin-top: 15px;
 }
 
-/* Aturan untuk setiap item anggota */
 .member-item {
     display: flex;
     align-items: center;
-    gap: 15px; /* Beri jarak lebih antara ikon dan nama */
-    background-color: #f8f8f8;
-    padding: 12px 15px; /* Beri padding horizontal sedikit lebih besar */
-    border-radius: 8px;
+    gap: 10px;
+    background-color: #f8f8f8; /* Konsisten dengan .explanation-panel & .handling-item */
+    padding: 12px;
+    border-radius: 8px; /* Konsisten dengan .card */
     transition: background-color 0.2s ease;
 }
 
@@ -581,20 +579,19 @@ body {
     background-color: #f0f0f0;
 }
 
-/* Aturan untuk ikon di dalam item */
 .member-item i {
-    font-size: 1.8em; /* Sedikit perbesar ikon agar lebih menonjol */
-    color: #4CAF50;
-    margin-right: 5px; /* Beri sedikit spasi tambahan di kanan ikon */
+    font-size: 1.5em;
+    color: #4CAF50; /* Warna hijau utama aplikasi */
 }
 
-/* Aturan untuk nama (teks) di dalam item */
+/* Ganti selector .member-item span yang ada dengan kode ini */
 .member-item span {
     font-weight: bold;
     color: #333;
-    /* Aturan ini memastikan nama yang sangat panjang akan turun ke bawah (wrap) */
-    min-width: 0;
-    word-break: break-word;
+
+    /* BARU: Memastikan teks selalu wrap di dalam kotak flexbox */
+    min-width: 0; /* Memberi izin pada teks untuk menyusut */
+    word-break: break-word; /* Memastikan teks akan turun ke bawah */
 }
 
 /* --- Media Queries untuk Responsivitas Keseluruhan --- */
