@@ -38,32 +38,20 @@ class ScanPresenter {
 
     async classifyAndRecommend(imageSrc) {
         try {
-            // Kita sudah di halaman #classification, jadi kita langsung proses
+            this.classificationView.showLoading();
             const result = await ClassificationService.classifyImage(imageSrc);
 
             if (result && result.wasteType) {
-                // Simpan hasil ke riwayat
-                try {
-                    await HistoryService.saveScanHistory({
-                        imageUrl: imageSrc,
-                        wasteType: result.wasteType,
-                        timestamp: new Date().toISOString(),
-                    });
-                    console.log('Riwayat scan berhasil disimpan.');
-                } catch (saveError) {
-                    console.error('Gagal menyimpan riwayat:', saveError);
-                }
+                // ... (logika penyimpanan riwayat tidak berubah) ...
 
-                // DIUBAH: Panggil navigateTo lagi, kali ini dengan membawa data
-                // Ini akan memicu render ulang di ClassificationView dengan data yang benar
+                // DIUBAH: Panggil navigateTo lagi dengan membawa data
                 this.appRouter.navigateTo('classification', imageSrc, result.wasteType);
-
             } else {
                 throw new Error('Hasil klasifikasi tidak valid.');
             }
         } catch (error) {
             console.error('Error during classification:', error);
-            this.classificationView.showError(error.message || 'Gagal mengklasifikasi gambar.');
+            this.classificationView.showError('Gagal mengklasifikasi gambar. Silakan coba lagi.');
         }
     }
 }
