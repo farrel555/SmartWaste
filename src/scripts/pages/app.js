@@ -84,22 +84,64 @@ class AppRouter {
 
         this.authPresenter = new AuthPresenter(this.authView);
         this.historyPresenter = new HistoryPresenter(this.historyView);
+        
+        // Menghubungkan presenter ke view yang relevan
+        // Inisialisasi ScanPresenter akan ditangani di setupRoutes karena bersifat async
     }
 
     bindGlobalEvents() {
-        // ... (kode ini tidak berubah) ...
+        this.menuToggleBtn.addEventListener('click', () => this.toggleMenu(true));
+        this.menuCloseBtn.addEventListener('click', () => this.toggleMenu(false));
+        this.menuOverlay.addEventListener('click', () => this.toggleMenu(false));
+
+        this.sideMenu.querySelectorAll('.menu-items li[data-route]').forEach(item => {
+            item.addEventListener('click', (event) => {
+                this.navigateTo(event.currentTarget.dataset.route);
+                this.toggleMenu(false);
+            });
+        });
+
+        this.logoutMenuItem.addEventListener('click', () => {
+            AuthService.logout(() => console.log("Logout callback dijalankan."));
+            this.toggleMenu(false);
+        });
     }
 
     bindAuthEvents() {
-        // ... (kode ini tidak berubah) ...
+        AuthService.on('login', (user) => {
+            console.log('Event Login terdeteksi:', user);
+            this.updateUIVisibility();
+            this.navigateTo('dashboard');
+        });
+
+        AuthService.on('logout', () => {
+            console.log('Event Logout terdeteksi.');
+            this.updateUIVisibility();
+            this.navigateTo('auth');
+        });
     }
     
     updateUIVisibility() {
-        // ... (kode ini tidak berubah) ...
+        const user = AuthService.getCurrentUser();
+        if (user) {
+            this.menuToggleBtn.style.display = 'block';
+            this.logoutMenuItem.style.display = 'flex';
+        } else {
+            this.menuToggleBtn.style.display = 'none';
+            this.sideMenu.classList.remove('open');
+            this.menuOverlay.classList.remove('open');
+            this.logoutMenuItem.style.display = 'none';
+        }
     }
 
     toggleMenu(open) {
-        // ... (kode ini tidak berubah) ...
+        if (open) {
+            this.sideMenu.classList.add('open');
+            this.menuOverlay.classList.add('open');
+        } else {
+            this.sideMenu.classList.remove('open');
+            this.menuOverlay.classList.remove('open');
+        }
     }
 
     async setupRoutes() {
@@ -111,6 +153,9 @@ class AppRouter {
                 this.recommendationView, 
                 this
             );
+            
+            // Menghubungkan ClassificationView dengan presenter yang bertanggung jawab
+            this.classificationView.presenter = this.scanPresenter;
             
             this.routes = {
                 'auth': { presenter: this.authPresenter },
@@ -139,26 +184,22 @@ class AppRouter {
             const mainContent = this.appContainer.querySelector('#main-content-area');
             const currentHash = window.location.hash.slice(1);
 
-            // Hanya hapus konten jika navigasi ke halaman yang berbeda
-            if (path !== currentHash.split('?')[0]) {
+            if (path !== currentHash) {
                 mainContent.innerHTML = '';
             }
             
             if (routeConfig.presenter) {
                 routeConfig.presenter.init(...args);
             } else if (routeConfig.view) {
-                // DIUBAH: Logika khusus untuk halaman 'classification'
+                // Logika khusus untuk ClassificationView agar bisa menampilkan loading
                 if (path === 'classification' && args.length === 0) {
-                    // Jika navigasi ke 'classification' TANPA data, panggil showLoading()
                     this.classificationView.showLoading();
                 } else {
-                    // Jika ada data, atau ini rute view lain, panggil render seperti biasa
                     routeConfig.view.render(...args);
                 }
             }
             
-            // Hanya update URL di history jika path-nya benar-benar baru
-            if (path !== currentHash.split('?')[0]) {
+            if (path !== currentHash) {
                 window.history.pushState({ path: path, args: args }, '', `#${path}`);
             }
         } else {
@@ -186,5 +227,4 @@ class AppRouter {
 
 export function initializeApp() {
     new AppRouter('app');
-    console.log('Aplikasi SmartWaste (MVP + Netlify Identity + History) telah diinisialisasi.');
 }
