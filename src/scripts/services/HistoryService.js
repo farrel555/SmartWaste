@@ -1,13 +1,14 @@
-// src/scripts/services/HistoryService.js (Versi Perbaikan dengan Header)
+// src/scripts/services/HistoryService.js (Versi Final)
 
 import AuthService from './AuthService';
 
 class HistoryService {
     async saveScanHistory(scanData) {
         const user = AuthService.getCurrentUser();
-        
-        // Pengecekan tambahan: pastikan user dan token ada
+
+        // Pengecekan penting untuk memastikan user dan token ada
         if (!user || !user.token || !user.token.access_token) {
+            console.error('saveScanHistory: Pengguna tidak valid atau token tidak ditemukan. Proses dibatalkan.');
             return Promise.reject(new Error('Pengguna tidak valid atau token tidak ditemukan.'));
         }
 
@@ -16,7 +17,7 @@ class HistoryService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // INI BAGIAN PALING PENTING: Mengirim token sebagai bukti login
+                    // BAGIAN KRUSIAL: Mengirim token sebagai bukti login
                     'Authorization': `Bearer ${user.token.access_token}`
                 },
                 body: JSON.stringify(scanData),
@@ -37,13 +38,14 @@ class HistoryService {
         const user = AuthService.getCurrentUser();
 
         if (!user || !user.token || !user.token.access_token) {
+            console.error('getScanHistory: Pengguna tidak terautentikasi. Proses dibatalkan.');
             return Promise.reject(new Error('Pengguna tidak terautentikasi.'));
         }
-        
+
         try {
             const response = await fetch('/.netlify/functions/get-history', {
                 headers: {
-                    // INI BAGIAN PALING PENTING: Mengirim token sebagai bukti login
+                    // BAGIAN KRUSIAL: Mengirim token sebagai bukti login
                     'Authorization': `Bearer ${user.token.access_token}`
                 }
             });
