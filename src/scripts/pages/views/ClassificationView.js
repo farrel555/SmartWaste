@@ -5,13 +5,19 @@ import BaseView from './BaseView';
 class ClassificationView extends BaseView {
     constructor(containerId) {
         super(containerId);
+        // Presenter akan di-set oleh AppRouter
     }
 
+    /**
+     * Metode utama untuk menampilkan hasil klasifikasi yang berhasil.
+     * @param {string} imageSrc - Sumber gambar yang di-scan (data URL).
+     * @param {string} wasteType - Jenis sampah hasil klasifikasi (misal, 'Organik').
+     */
     render(imageSrc, wasteType) {
-        // Pengecekan Pengaman: Jika dipanggil tanpa data, jangan lakukan apa-apa.
-        // Tampilan loading/error akan tetap ada.
+        // Pengecekan Pengaman: Jika dipanggil tanpa data, jangan render hasil.
+        // Ini mencegah error jika navigateTo dipanggil tanpa argumen.
         if (!imageSrc || !wasteType) {
-            console.warn("ClassificationView.render dipanggil tanpa data lengkap.");
+            this.showLoading(); // Tampilkan loading sebagai default jika tidak ada data
             return; 
         }
 
@@ -22,6 +28,7 @@ class ClassificationView extends BaseView {
                 recommendationText = 'Sampah ini dapat diolah menjadi kompos atau pakan ternak.';
                 break;
             case 'non_organik':
+            case 'anorganik': // Menangani kedua kemungkinan output
                 recommendationText = 'Dapat didaur ulang. Pisahkan dan setorkan ke bank sampah.';
                 break;
             case 'b3':
