@@ -1,8 +1,8 @@
 // src/scripts/services/ClassificationService.js
 
-// Mengambil URL API dari environment variable yang disuntikkan oleh Webpack.
-// Jika tidak ada, ia akan menggunakan URL live sebagai fallback.
-const API_BASE_URL = process.env.API_BASE_URL || 'https://smartwaste-api.fly.dev';
+// LANGSUNG TULIS URL API ANDA DI SINI
+// Ganti dengan URL dari Fly.io, Render, atau layanan hosting backend Anda.
+const API_BASE_URL = 'https://smartwaste-api.fly.dev'; 
 
 class ClassificationService {
     /**
@@ -14,23 +14,18 @@ class ClassificationService {
         console.log(`Mengirim gambar ke backend: ${API_BASE_URL}`);
 
         try {
-            // Ubah data URL base64 menjadi objek Blob agar bisa dikirim sebagai file
             const fetchRes = await fetch(imageSrc);
             const blob = await fetchRes.blob();
             
-            // Buat objek FormData untuk mengirim file
             const formData = new FormData();
             formData.append('file', blob, 'image.jpg');
 
-            // Kirim request ke endpoint /predict di backend FastAPI Anda
             const response = await fetch(`${API_BASE_URL}/predict`, {
                 method: 'POST',
                 body: formData,
-                // Saat menggunakan FormData, header 'Content-Type' akan diatur otomatis oleh browser
             });
 
             if (!response.ok) {
-                // Penanganan error yang lebih baik untuk berbagai jenis respons
                 let errorMsg = `Gagal mendapatkan hasil klasifikasi. Status: ${response.status}`;
                 try {
                     const errorData = await response.json();
@@ -47,7 +42,7 @@ class ClassificationService {
 
         } catch (error) {
             console.error('Error saat memanggil API klasifikasi:', error);
-            throw error; // Teruskan error agar bisa ditangani oleh presenter
+            throw error;
         }
     }
 }
