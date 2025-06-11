@@ -1,4 +1,4 @@
-// src/scripts/index.js (Versi Perbaikan Final)
+
 
 import '../styles/main.css';
 import { initializeApp } from './pages/app'; // Path ke app.js Anda

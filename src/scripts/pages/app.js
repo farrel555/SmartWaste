@@ -10,7 +10,7 @@ import HistoryView from './views/HistoryView';
 
 // Impor Presenters
 import AuthPresenter from './presenters/AuthPresenter';
-import HistoryPresenter from './presenters/HistoryPresenter'; // BARU
+import HistoryPresenter from './presenters/HistoryPresenter';
 
 // Impor Services
 import AuthService from '../services/AuthService'; 
@@ -26,17 +26,22 @@ class AppRouter {
         this.routes = {};
         this.currentPresenter = null;
 
+        // 1. Render layout HTML dasar terlebih dahulu
         this.renderGlobalLayout();
+        // 2. Setelah HTML ada, baru cari elemen-elemennya
         this.setupElements();
+        // 3. Inisialisasi Views dan Presenters
         this.setupViewsAndPresenters();
-        
+        // 4. Inisialisasi dan ikat event dari AuthService (Netlify Identity)
         AuthService.init();
         this.bindAuthEvents();
+        // 5. Ikat event-event global ke elemen yang sudah ditemukan
         this.bindGlobalEvents();
-        
+        // 6. Siapkan rute dan navigasi awal (sekarang async)
         this.setupRoutes();
+        // 7. Ikat event popstate untuk navigasi browser
         this.bindPopstateEvent();
-        
+        // 8. Sesuaikan UI berdasarkan status login awal
         this.updateUIVisibility();
     }
 
@@ -57,7 +62,8 @@ class AppRouter {
                 <ul class="menu-items">
                     <li data-route="dashboard"><i class="fas fa-chart-line"></i> Dashboard</li>
                     <li data-route="scan"><i class="fas fa-camera"></i> Scan Sampah</li>
-                    <li data-route="history"><i class="fas fa-history"></i> Riwayat Scan</li> <li id="logout-menu-item"><i class="fas fa-sign-out-alt"></i> Logout</li>
+                    <li data-route="history"><i class="fas fa-history"></i> Riwayat Scan</li>
+                    <li id="logout-menu-item"><i class="fas fa-sign-out-alt"></i> Logout</li>
                 </ul>
             </div>
             <div id="menu-overlay" class="menu-overlay"></div>
@@ -74,7 +80,6 @@ class AppRouter {
     }
 
     setupViewsAndPresenters() {
-        // DIUBAH: Inisialisasi View dan Presenter baru
         this.authView = new AuthView('main-content-area');
         this.dashboardView = new DashboardView('main-content-area');
         this.scanView = new ScanView('main-content-area');
@@ -151,12 +156,14 @@ class AppRouter {
                 this
             );
             
-            // DIUBAH: Tambahkan rute baru untuk riwayat
+            // Menambahkan semua rute yang mungkin diakses
             this.routes = {
                 'auth': { presenter: this.authPresenter },
                 'dashboard': { view: this.dashboardView },
                 'scan': { presenter: this.scanPresenter },
                 'history': { presenter: this.historyPresenter },
+                'classification': { view: this.classificationView }, // Rute untuk menampilkan hasil
+                'recommendation': { view: this.recommendationView }, // Rute untuk rekomendasi
             };
 
             this.handleInitialRoute();
