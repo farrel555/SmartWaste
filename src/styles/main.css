@@ -147,26 +147,28 @@ body {
     background-color: #e0e0e0;
 }
 
-/* Kontainer untuk item yang memiliki sub-menu */
+/* === GAYA UNTUK SUB-MENU DI SIDEBAR (VERSI PERBAIKAN) === */
+
+/* Kontainer untuk item yang memiliki sub-menu (<li>) */
 .side-menu .menu-items .has-submenu {
-    /* Hapus padding default agar tidak ada ruang kosong aneh */
-    padding: 0;
-    /* Kita atur agar sub-menu berada relatif terhadap item ini */
+    padding: 0; /* Hapus padding dari <li> induk */
+    display: block; /* Pastikan display-nya block */
     position: relative;
-    display: block; /* Ubah dari flex agar sub-menu bisa ditampilkan di bawahnya */
+    border-bottom: 1px solid #eee; /* Pindahkan border ke sini */
 }
 
-/* Tombol utama untuk membuka sub-menu */
+/* Tombol utama untuk membuka sub-menu (<a>) */
 .side-menu .menu-items .has-submenu .menu-toggle-submenu {
     display: flex;
     align-items: center;
     width: 100%;
+    /* Gunakan padding yang sama dengan item menu lain */
     padding: 15px 20px;
     color: #333;
     text-decoration: none;
     background-color: transparent;
     border: none;
-    font-size: 1em; /* Samakan dengan font item menu lain */
+    font-size: 1em;
     font-family: 'Arial', sans-serif;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -176,9 +178,17 @@ body {
     background-color: #e0e0e0;
 }
 
+/* Ikon di dalam tombol utama */
+.side-menu .menu-items .has-submenu .menu-toggle-submenu i.fa-lightbulb {
+    margin-right: 15px;
+    color: #4CAF50;
+    width: 20px;
+    text-align: center;
+}
+
 /* Ikon panah di sebelah kanan */
 .side-menu .menu-items .has-submenu .submenu-arrow {
-    margin-left: auto; /* Mendorong panah ke paling kanan */
+    margin-left: auto;
     font-size: 0.8em;
     transition: transform 0.3s ease-in-out;
 }
@@ -188,31 +198,35 @@ body {
     transform: rotate(180deg);
 }
 
-/* Kontainer untuk sub-menu (daftar Organik & Non-Organik) */
+/* Kontainer untuk sub-menu (<ul>) */
 .side-menu .menu-items .has-submenu .submenu {
     list-style: none;
-    padding-left: 30px; /* Indentasi agar terlihat seperti anak menu */
+    /* DIUBAH: Hapus semua margin/padding luar agar pas dengan container */
+    padding: 0;
+    margin: 0;
     background-color: #f0f0f0; /* Warna latar sedikit berbeda */
-    margin-left: -20px;
     
     /* Logika untuk menyembunyikan dan menampilkan dengan animasi */
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease-in-out;
+    transition: max-height 0.3s ease-out;
 }
 
 /* Saat sub-menu terbuka */
 .side-menu .menu-items .has-submenu.open .submenu {
     max-height: 200px; /* Atur tinggi maksimal yang cukup untuk semua item */
-    padding-top: 5px;
-    padding-bottom: 5px;
 }
 
-/* Setiap item di dalam sub-menu */
+/* Setiap item di dalam sub-menu (<li>) */
 .side-menu .menu-items .has-submenu .submenu li {
-    padding: 10px 15px 10px 25px; /* Atur padding agar pas */
+    /* DIUBAH: Atur padding agar indentasi terjadi di sini */
+    padding: 10px 20px 10px 55px; /* 55px = 20px (padding induk) + 15px (margin ikon) + 20px (lebar ikon) */
     border-bottom: none; /* Hapus garis bawah untuk item sub-menu */
     font-size: 0.9em;
+}
+
+.side-menu .menu-items .has-submenu .submenu li:hover {
+    background-color: #e9e9e9; /* Warna hover sedikit berbeda */
 }
 
 /* Overlay saat menu terbuka */
@@ -366,32 +380,40 @@ body {
     margin-bottom: 10px;
 }
 
-/* Classification Display */
+/* Di dalam file main.css */
+
+/* --- Bagian Halaman Klasifikasi & Riwayat --- */
+
 .classification-result {
     text-align: center;
+    width: 100%; /* Pastikan kontainer mengambil lebar penuh */
 }
-.classification-result img,
-.history-image {
-    width: 100px;
-    height: 100px;
+
+.classification-result img {
+    /* DIUBAH: Aturan ini akan memastikan gambar tidak keluar batas */
+    max-width: 100%;    /* Lebar gambar tidak akan pernah melebihi lebar kontainernya */
+    height: auto;       /* Tinggi akan menyesuaikan secara proporsional */
+    max-height: 300px;  /* Batasi tinggi maksimal agar tidak terlalu besar di layar kecil */
+    object-fit: contain;/* Memastikan seluruh gambar terlihat tanpa distorsi */
+    
+    /* Aturan styling lain yang sudah ada */
     border-radius: 8px;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 3px solid #eee;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .classification-result p {
-    font-size: 1.1em;
+    font-size: 1.2em;
     font-weight: bold;
     margin-top: 15px;
 }
+
 .recommendation-text {
     font-size: 0.9em;
     font-weight: normal;
     color: #555;
     margin-top: 5px;
 }
-
 .history-list {
     display: flex;
     flex-direction: column;
