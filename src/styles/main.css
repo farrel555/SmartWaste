@@ -86,6 +86,35 @@ body {
 }
 
 /* Sidebar Menu Styling */
+.side-menu .menu-items .has-submenu {
+    /* Hapus padding default agar tidak ada ruang kosong aneh */
+    padding: 0;
+    /* Kita atur agar sub-menu berada relatif terhadap item ini */
+    position: relative;
+    display: block; /* Ubah dari flex agar sub-menu bisa ditampilkan di bawahnya */
+}
+
+/* Tombol utama untuk membuka sub-menu */
+.side-menu .menu-items .has-submenu .menu-toggle-submenu {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 15px 20px;
+    color: #333;
+    text-decoration: none;
+    background-color: transparent;
+    border: none;
+    font-size: 1em; /* Samakan dengan font item menu lain */
+    font-family: 'Arial', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.side-menu .menu-items .has-submenu .menu-toggle-submenu:hover {
+    background-color: #e0e0e0;
+}
+
+/* Ikon panah di sebelah kanan */
 .side-menu .menu-items .has-submenu .submenu-arrow {
     margin-left: auto; /* Mendorong panah ke paling kanan */
     font-size: 0.8em;
