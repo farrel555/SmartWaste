@@ -97,8 +97,18 @@ class AppRouter {
             item.addEventListener('click', (event) => {
                 this.navigateTo(event.currentTarget.dataset.route);
                 this.toggleMenu(false);
+            
             });
         });
+
+        const submenuToggle = this.sideMenu.querySelector('.menu-toggle-submenu');
+        if (submenuToggle) {
+            submenuToggle.addEventListener('click', (event) => {
+                event.preventDefault(); // Mencegah link berpindah halaman
+                const parentLi = event.currentTarget.parentElement;
+                parentLi.classList.toggle('open');
+            });
+        }
 
         this.logoutMenuItem.addEventListener('click', () => {
             AuthService.logout(() => console.log("Logout callback dijalankan."));
