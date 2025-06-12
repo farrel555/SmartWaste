@@ -1,7 +1,10 @@
-// src/scripts/pages/presenters/ScanPresenter.js (Versi Perbaikan Final)
+// src/scripts/pages/presenters/ScanPresenter.js
 
+// DIHAPUS: HistoryService tidak lagi diperlukan di sini
+// import HistoryService from '../../services/HistoryService';
+
+// HANYA ClassificationService yang kita butuhkan
 import ClassificationService from '../../services/ClassificationService';
-import HistoryService from '../../services/HistoryService';
 
 class ScanPresenter {
     constructor(scanView, classificationView, recommendationView, appRouter) {
@@ -18,52 +21,44 @@ class ScanPresenter {
     }
 
     handleFileSelected(file) {
-        // 1. Arahkan ke halaman klasifikasi. Karena tidak ada argumen, 
-        //    AppRouter akan memanggil classificationView.showLoading()
-        this.appRouter.navigateTo('classification');
-
-        // 2. Baca file secara asynchronous
         const reader = new FileReader();
+
         reader.onload = (event) => {
             const imageSrc = event.target.result;
-            // 3. Setelah file siap, panggil proses klasifikasi
-            this.classifyAndRecommend(imageSrc); 
+            // Langsung panggil metode klasifikasi dan tampilkan hasilnya
+            this.classifyAndShowResult(imageSrc); 
         };
+
         reader.onerror = () => {
             this.classificationView.showError("Gagal memuat file gambar.");
         };
+
         reader.readAsDataURL(file);
     }
 
-    async classifyAndRecommend(imageSrc) {
+    async classifyAndShowResult(imageSrc) {
         try {
-            // Kita sudah berada di halaman #classification yang menampilkan loading.
-            
-            // 4. Lakukan proses klasifikasi
+            // 1. Tampilkan halaman loading terlebih dahulu
+            this.classificationView.showLoading();
+            this.appRouter.navigateTo('classification');
+
+            // 2. Kirim gambar ke backend FastAPI untuk diprediksi
             const result = await ClassificationService.classifyImage(imageSrc);
 
             if (result && result.wasteType) {
-                // 5. Simpan riwayat
-                try {
-                    await HistoryService.saveScanHistory({
-                        imageUrl: imageSrc,
-                        wasteType: result.wasteType,
-                        timestamp: new Date().toISOString(),
-                    });
-                } catch (saveError) {
-                    console.error('Gagal menyimpan riwayat:', saveError);
-                }
+                // Backend FastAPI sekarang juga bisa kita program untuk
+                // otomatis menyimpan riwayat setelah prediksi berhasil.
+                // Jadi, frontend tidak perlu lagi memanggil saveHistory secara terpisah.
+                console.log('Klasifikasi berhasil dan riwayat otomatis disimpan di backend.');
 
-                // 6. PANGGILAN KUNCI: Render ulang ClassificationView dengan data hasil
-                // Kali ini, karena kita tidak memanggil navigateTo, URL tidak akan berubah,
-                // hanya kontennya yang akan diperbarui.
+                // 3. Tampilkan hasil klasifikasi di view
                 this.classificationView.render(imageSrc, result.wasteType);
 
             } else {
                 throw new Error('Hasil klasifikasi tidak valid dari API.');
             }
         } catch (error) {
-            // 7. Jika terjadi error, tampilkan pesan error
+            console.error('Error during classification:', error);
             this.classificationView.showError(error.message || 'Gagal mengklasifikasi gambar.');
         }
     }
