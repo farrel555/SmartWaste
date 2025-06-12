@@ -6,12 +6,10 @@ import DashboardView from './views/DashboardView';
 import ScanView from './views/ScanView';
 import ClassificationView from './views/ClassificationView';
 import HistoryView from './views/HistoryView';
-import CreativeProductsView from './views/CreativeProductsView'; // BARU
 
 // Impor Presenters
 import AuthPresenter from './presenters/AuthPresenter';
 import HistoryPresenter from './presenters/HistoryPresenter';
-import CreativeProductsPresenter from './presenters/CreativeProductsPresenter'; // BARU
 
 // Impor Services
 import AuthService from '../services/AuthService'; 
@@ -58,17 +56,6 @@ class AppRouter {
                 <ul class="menu-items">
                     <li data-route="dashboard"><i class="fas fa-chart-line"></i> Dashboard</li>
                     <li data-route="scan"><i class="fas fa-camera"></i> Scan Sampah</li>
-                    
-                    <li class="has-submenu">
-                        <a href="#" class="menu-toggle-submenu">
-                            <i class="fas fa-lightbulb"></i> Produk Kreatif <i class="fas fa-chevron-down submenu-arrow"></i>
-                        </a>
-                        <ul class="submenu">
-                            <li data-route="creative/organik">Organik</li>
-                            <li data-route="creative/nonorganik">Non-Organik</li>
-                        </ul>
-                    </li>
-
                     <li data-route="history"><i class="fas fa-history"></i> Riwayat Scan</li>
                     <li id="logout-menu-item"><i class="fas fa-sign-out-alt"></i> Logout</li>
                 </ul>
@@ -92,11 +79,9 @@ class AppRouter {
         this.scanView = new ScanView('main-content-area');
         this.classificationView = new ClassificationView('main-content-area');
         this.historyView = new HistoryView('main-content-area');
-        this.creativeProductsView = new CreativeProductsView('main-content-area');
 
         this.authPresenter = new AuthPresenter(this.authView);
         this.historyPresenter = new HistoryPresenter(this.historyView);
-        this.creativeProductsPresenter = new CreativeProductsPresenter(this.creativeProductsView);
     }
 
     bindGlobalEvents() {
@@ -104,21 +89,12 @@ class AppRouter {
         this.menuCloseBtn.addEventListener('click', () => this.toggleMenu(false));
         this.menuOverlay.addEventListener('click', () => this.toggleMenu(false));
 
-        // Event listener untuk semua item menu, termasuk sub-menu
-        this.sideMenu.querySelectorAll('li[data-route]').forEach(item => {
+        this.sideMenu.querySelectorAll('.menu-items li[data-route]').forEach(item => {
             item.addEventListener('click', (event) => {
                 this.navigateTo(event.currentTarget.dataset.route);
                 this.toggleMenu(false);
             });
         });
-        
-        const submenuToggle = this.sideMenu.querySelector('.menu-toggle-submenu');
-        if (submenuToggle) {
-            submenuToggle.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.currentTarget.parentElement.classList.toggle('open');
-            });
-        }
 
         this.logoutMenuItem.addEventListener('click', () => {
             AuthService.logout(() => console.log("Logout callback dijalankan."));
@@ -127,32 +103,63 @@ class AppRouter {
     }
 
     bindAuthEvents() {
-        // ... (Tidak ada perubahan di sini)
+        AuthService.on('login', (user) => {
+            console.log('Event Login terdeteksi:', user);
+            this.updateUIVisibility();
+            this.navigateTo('dashboard');
+        });
+
+        AuthService.on('logout', () => {
+            console.log('Event Logout terdeteksi.');
+            this.updateUIVisibility();
+            this.navigateTo('auth');
+        });
     }
     
     updateUIVisibility() {
-        // ... (Tidak ada perubahan di sini)
+        const user = AuthService.getCurrentUser();
+        if (user) {
+            this.menuToggleBtn.style.display = 'block';
+            this.logoutMenuItem.style.display = 'flex';
+        } else {
+            this.menuToggleBtn.style.display = 'none';
+            this.sideMenu.classList.remove('open');
+            this.menuOverlay.classList.remove('open');
+            this.logoutMenuItem.style.display = 'none';
+        }
     }
 
     toggleMenu(open) {
-        // ... (Tidak ada perubahan di sini)
+        if (open) {
+            this.sideMenu.classList.add('open');
+            this.menuOverlay.classList.add('open');
+        } else {
+            this.sideMenu.classList.remove('open');
+            this.menuOverlay.classList.remove('open');
+        }
     }
 
     async setupRoutes() {
         try {
-            // Import ScanPresenter secara dinamis
             const { default: ScanPresenter } = await import('./presenters/ScanPresenter');
-            this.scanPresenter = new ScanPresenter(this.scanView, this.classificationView, null, this);
+            
+            // Inisialisasi ScanPresenter setelah diimpor
+            this.scanPresenter = new ScanPresenter(
+                this.scanView, 
+                this.classificationView, 
+                this.recommendationView, 
+                this
+            );
+            
+            // DIUBAH: Hubungkan ClassificationView dengan presenter yang bertanggung jawab
             this.classificationView.presenter = this.scanPresenter;
             
-            // Definisikan semua rute aplikasi
             this.routes = {
                 'auth': { presenter: this.authPresenter },
                 'dashboard': { view: this.dashboardView },
                 'scan': { presenter: this.scanPresenter },
                 'history': { presenter: this.historyPresenter },
                 'classification': { view: this.classificationView },
-                'creative/:category': { presenter: this.creativeProductsPresenter },
             };
 
             this.handleInitialRoute();
@@ -168,55 +175,51 @@ class AppRouter {
             return;
         }
 
-        const currentHash = window.location.hash.slice(1);
-        const mainContent = this.appContainer.querySelector('#main-content-area');
-        
-        let routeConfig;
-        let routeParams = [];
-        const pathParts = path.split('/');
-        const baseRoute = pathParts[0];
-
-        // Cek rute dinamis seperti 'creative/:category'
-        if (this.routes[`${baseRoute}/:category`]) {
-            routeConfig = this.routes[`${baseRoute}/:category`];
-            routeParams.push(pathParts[1]); // Menangkap 'organik' atau 'nonorganik'
-        } else {
-            routeConfig = this.routes[path];
-        }
-
+        const routeConfig = this.routes[path];
         if (routeConfig) {
-            if (path !== currentHash) {
-                mainContent.innerHTML = ''; // Hanya bersihkan konten jika navigasi ke rute yang benar-benar baru
+            const mainContent = this.appContainer.querySelector('#main-content-area');
+            const currentHash = window.location.hash.slice(1);
+
+            // Hanya hapus konten jika navigasi ke halaman yang berbeda
+            if (path !== currentHash.split('?')[0]) {
+                mainContent.innerHTML = '';
             }
             
-            const allArgs = [...routeParams, ...args];
-
             if (routeConfig.presenter) {
-                routeConfig.presenter.init(...allArgs);
+                routeConfig.presenter.init(...args);
             } else if (routeConfig.view) {
-                // Logika khusus untuk ClassificationView
-                if (path === 'classification' && allArgs.length === 0) {
+                // Logika khusus untuk ClassificationView agar bisa menampilkan loading
+                if (path === 'classification' && args.length === 0) {
                     this.classificationView.showLoading();
                 } else {
-                    routeConfig.view.render(...allArgs);
+                    routeConfig.view.render(...args);
                 }
             }
             
-            if (path !== currentHash) {
-                window.history.pushState({ path, args: allArgs }, '', `#${path}`);
+            // Hanya update URL di history jika path-nya benar-benar baru
+            if (path !== currentHash.split('?')[0]) {
+                window.history.pushState({ path: path, args: args }, '', `#${path}`);
             }
         } else {
-            // Fallback ke rute default jika rute tidak ditemukan
             this.navigateTo(user ? 'dashboard' : 'auth');
         }
     }
 
     bindPopstateEvent() {
-        // ... (Tidak ada perubahan di sini)
+        window.addEventListener('popstate', (event) => {
+            const path = event.state?.path || (AuthService.getCurrentUser() ? 'dashboard' : 'auth');
+            this.navigateTo(path, ...(event.state?.args || []));
+        });
     }
 
     handleInitialRoute() {
-        // ... (Tidak ada perubahan di sini)
+        const hash = window.location.hash.slice(1).split('?')[0];
+        const user = AuthService.getCurrentUser();
+        if (user) {
+            this.navigateTo(hash && this.routes[hash] ? hash : 'dashboard');
+        } else {
+            this.navigateTo('auth');
+        }
     }
 }
 
