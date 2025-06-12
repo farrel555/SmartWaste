@@ -1,4 +1,3 @@
-// src/scripts/services/HistoryService.js (Versi Perbaikan dengan Header)
 
 import AuthService from './AuthService';
 
@@ -6,7 +5,15 @@ class HistoryService {
     async saveScanHistory(scanData) {
         const user = AuthService.getCurrentUser();
         
-        // Pengecekan tambahan: pastikan user dan token ada
+        // --- BLOK DEBUGGING ---
+        console.log("Mencoba menyimpan riwayat. Objek user saat ini:", user);
+        if (user && user.token) {
+            console.log("Token yang akan dikirim:", user.token.access_token);
+        } else {
+            console.error("TOKEN TIDAK DITEMUKAN PADA OBJEK USER!");
+        }
+        // --- AKHIR BLOK DEBUGGING ---
+
         if (!user || !user.token || !user.token.access_token) {
             return Promise.reject(new Error('Pengguna tidak valid atau token tidak ditemukan.'));
         }
@@ -16,7 +23,6 @@ class HistoryService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // INI BAGIAN PALING PENTING: Mengirim token sebagai bukti login
                     'Authorization': `Bearer ${user.token.access_token}`
                 },
                 body: JSON.stringify(scanData),
