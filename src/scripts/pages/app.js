@@ -6,6 +6,8 @@ import DashboardView from './views/DashboardView';
 import ScanView from './views/ScanView';
 import ClassificationView from './views/ClassificationView';
 import HistoryView from './views/HistoryView';
+import CreativeProductsView from './views/CreativeProductsView';
+import CreativeProductsPresenter from './presenters/CreativeProductsPresenter';
 
 // Impor Presenters
 import AuthPresenter from './presenters/AuthPresenter';
@@ -79,9 +81,11 @@ class AppRouter {
         this.scanView = new ScanView('main-content-area');
         this.classificationView = new ClassificationView('main-content-area');
         this.historyView = new HistoryView('main-content-area');
+        this.creativeProductsView = new CreativeProductsView('main-content-area');  
 
         this.authPresenter = new AuthPresenter(this.authView);
         this.historyPresenter = new HistoryPresenter(this.historyView);
+        this.creativeProductsPresenter = new CreativeProductsPresenter(this.creativeProductsView);
     }
 
     bindGlobalEvents() {
@@ -160,6 +164,7 @@ class AppRouter {
                 'scan': { presenter: this.scanPresenter },
                 'history': { presenter: this.historyPresenter },
                 'classification': { view: this.classificationView },
+                'creative/:category': { presenter: this.creativeProductsPresenter }, 
             };
 
             this.handleInitialRoute();
@@ -175,32 +180,52 @@ class AppRouter {
             return;
         }
 
-        const routeConfig = this.routes[path];
-        if (routeConfig) {
-            const mainContent = this.appContainer.querySelector('#main-content-area');
-            const currentHash = window.location.hash.slice(1);
+        const mainContent = this.appContainer.querySelector('#main-content-area');
+        const currentHash = window.location.hash.slice(1);
+        
+        // --- LOGIKA BARU UNTUK RUTE DINAMIS ---
+        let routeConfig;
+        let routeParams = [];
+        const pathParts = path.split('/'); // Memecah path, misal: 'creative/organik' -> ['creative', 'organik']
+        const baseRoute = pathParts[0]; // Bagian pertama dari path, misal: 'creative'
 
-            // Hanya hapus konten jika navigasi ke halaman yang berbeda
-            if (path !== currentHash.split('?')[0]) {
+        // Cek apakah ada rute dinamis yang cocok seperti 'creative/:category'
+        if (pathParts.length > 1 && this.routes[`${baseRoute}/:category`]) {
+            routeConfig = this.routes[`${baseRoute}/:category`];
+            // Ambil bagian kedua dari path sebagai parameter
+            routeParams.push(pathParts[1]); // Menangkap 'organik' atau 'nonorganik'
+        } else {
+            // Jika tidak, cari rute statis biasa
+            routeConfig = this.routes[path];
+        }
+        // --- AKHIR LOGIKA BARU ---
+
+        if (routeConfig) {
+            // Hanya hapus konten jika navigasi ke rute yang benar-benar baru
+            if (path !== currentHash) {
                 mainContent.innerHTML = '';
             }
             
+            // Gabungkan parameter dari URL dengan argumen lain
+            const allArgs = [...routeParams, ...args];
+
             if (routeConfig.presenter) {
-                routeConfig.presenter.init(...args);
+                routeConfig.presenter.init(...allArgs);
             } else if (routeConfig.view) {
                 // Logika khusus untuk ClassificationView agar bisa menampilkan loading
-                if (path === 'classification' && args.length === 0) {
+                if (path === 'classification' && allArgs.length === 0) {
                     this.classificationView.showLoading();
                 } else {
-                    routeConfig.view.render(...args);
+                    routeConfig.view.render(...allArgs);
                 }
             }
             
             // Hanya update URL di history jika path-nya benar-benar baru
-            if (path !== currentHash.split('?')[0]) {
-                window.history.pushState({ path: path, args: args }, '', `#${path}`);
+            if (path !== currentHash) {
+                window.history.pushState({ path, args: allArgs }, '', `#${path}`);
             }
         } else {
+            // Fallback jika rute tidak ditemukan sama sekali
             this.navigateTo(user ? 'dashboard' : 'auth');
         }
     }
