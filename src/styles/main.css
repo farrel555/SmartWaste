@@ -204,7 +204,6 @@ body {
 /* Kontainer untuk sub-menu (<ul>) */
 .side-menu .menu-items .has-submenu .submenu {
     list-style: none;
-    /* DIUBAH: Hapus semua margin/padding luar agar pas dengan container */
     padding: 0;
     margin: 0;
     background-color: #f0f0f0; /* Warna latar sedikit berbeda */
@@ -217,7 +216,7 @@ body {
 
 /* Saat sub-menu terbuka */
 .side-menu .menu-items .has-submenu.open .submenu {
-    max-height: 200px; /* Atur tinggi maksimal yang cukup untuk semua item */
+    max-height: 85px; /* Atur tinggi maksimal yang cukup untuk semua item */
     padding-top: 5px;
     padding-bottom: 5px;
 }
