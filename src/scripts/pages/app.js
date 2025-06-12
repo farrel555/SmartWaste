@@ -34,7 +34,7 @@ class AppRouter {
         this.bindAuthEvents();
         this.bindGlobalEvents();
         
-        this.setupRoutes();
+        this.setupRoutes(); // Ini bersifat async
         this.bindPopstateEvent();
         
         this.updateUIVisibility();
@@ -84,9 +84,6 @@ class AppRouter {
 
         this.authPresenter = new AuthPresenter(this.authView);
         this.historyPresenter = new HistoryPresenter(this.historyView);
-        
-        // Menghubungkan presenter ke view yang relevan
-        // Inisialisasi ScanPresenter akan ditangani di setupRoutes karena bersifat async
     }
 
     bindGlobalEvents() {
@@ -147,6 +144,8 @@ class AppRouter {
     async setupRoutes() {
         try {
             const { default: ScanPresenter } = await import('./presenters/ScanPresenter');
+            
+            // Inisialisasi ScanPresenter setelah diimpor
             this.scanPresenter = new ScanPresenter(
                 this.scanView, 
                 this.classificationView, 
@@ -154,7 +153,7 @@ class AppRouter {
                 this
             );
             
-            // Menghubungkan ClassificationView dengan presenter yang bertanggung jawab
+            // DIUBAH: Hubungkan ClassificationView dengan presenter yang bertanggung jawab
             this.classificationView.presenter = this.scanPresenter;
             
             this.routes = {
@@ -184,7 +183,8 @@ class AppRouter {
             const mainContent = this.appContainer.querySelector('#main-content-area');
             const currentHash = window.location.hash.slice(1);
 
-            if (path !== currentHash) {
+            // Hanya hapus konten jika navigasi ke halaman yang berbeda
+            if (path !== currentHash.split('?')[0]) {
                 mainContent.innerHTML = '';
             }
             
@@ -199,7 +199,8 @@ class AppRouter {
                 }
             }
             
-            if (path !== currentHash) {
+            // Hanya update URL di history jika path-nya benar-benar baru
+            if (path !== currentHash.split('?')[0]) {
                 window.history.pushState({ path: path, args: args }, '', `#${path}`);
             }
         } else {
@@ -215,7 +216,7 @@ class AppRouter {
     }
 
     handleInitialRoute() {
-        const hash = window.location.hash.slice(1);
+        const hash = window.location.hash.slice(1).split('?')[0];
         const user = AuthService.getCurrentUser();
         if (user) {
             this.navigateTo(hash && this.routes[hash] ? hash : 'dashboard');
