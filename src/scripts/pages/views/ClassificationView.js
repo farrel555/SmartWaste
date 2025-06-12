@@ -53,7 +53,7 @@ class ClassificationView extends BaseView {
                 </div>
                 <button class="btn" id="scan-again-btn">Scan Lagi</button>
                 <button class="btn btn-submenu" id="go-submenu-btn">
-                    Lihat produk kreatif dari ${wasteType.charAt(0).toUpperCase() + wasteType.slice(1)}
+                    Lihat produk kreatif ${wasteType.charAt(0).toUpperCase() + wasteType.slice(1)}
                 </button>
             </div>
         `;
