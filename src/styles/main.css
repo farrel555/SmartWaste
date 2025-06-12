@@ -193,6 +193,7 @@ body {
     list-style: none;
     padding-left: 30px; /* Indentasi agar terlihat seperti anak menu */
     background-color: #f0f0f0; /* Warna latar sedikit berbeda */
+    margin-left: -20px;
     
     /* Logika untuk menyembunyikan dan menampilkan dengan animasi */
     max-height: 0;
