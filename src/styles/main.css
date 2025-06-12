@@ -150,6 +150,9 @@ body {
 /* === GAYA UNTUK SUB-MENU DI SIDEBAR (VERSI PERBAIKAN) === */
 
 /* Kontainer untuk item yang memiliki sub-menu (<li>) */
+/* === GAYA UNTUK SUB-MENU DI SIDEBAR (VERSI PERBAIKAN) === */
+
+/* Kontainer untuk item yang memiliki sub-menu (<li>) */
 .side-menu .menu-items .has-submenu {
     padding: 0; /* Hapus padding dari <li> induk */
     display: block; /* Pastikan display-nya block */
@@ -215,6 +218,8 @@ body {
 /* Saat sub-menu terbuka */
 .side-menu .menu-items .has-submenu.open .submenu {
     max-height: 200px; /* Atur tinggi maksimal yang cukup untuk semua item */
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 /* Setiap item di dalam sub-menu (<li>) */
