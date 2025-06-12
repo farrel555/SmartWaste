@@ -13,3 +13,11 @@
   targetPort = 8080
   # Direktori yang disajikan oleh dev server
   publish = "dist"
+
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+  [redirects.headers]
+    Authorization = "*"
