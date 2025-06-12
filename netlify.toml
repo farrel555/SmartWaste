@@ -1,23 +1,12 @@
 # netlify.toml
 
 [build]
-  # Direktori tempat Netlify akan mencari fungsi Anda
-  functions = "netlify/functions"
-  # Direktori output setelah 'npm run build' selesai
+  # Direktori output frontend setelah 'npm run build' selesai
   publish = "dist"
+  # Perintah untuk membangun frontend Anda
+  command = "npm run build"
 
 [dev]
-  # Perintah untuk menjalankan server frontend (webpack-dev-server)
   command = "npm run start"
-  # Port tempat frontend Anda berjalan
   targetPort = 8080
-  # Direktori yang disajikan oleh dev server
   publish = "dist"
-
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = true
-  [redirects.headers]
-    Authorization = "*"
