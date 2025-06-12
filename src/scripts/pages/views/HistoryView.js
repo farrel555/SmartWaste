@@ -29,6 +29,20 @@ class HistoryView extends BaseView {
     showLoading() {
         this.container.innerHTML = `<div class="card history-card"><p>Memuat riwayat...</p></div>`;
     }
+        showError(message) {
+        this.container.innerHTML = `
+            <div class="card history-card error-card">
+                 <div class="page-specific-header">
+                    <div class="page-header-logo"><i class="fas fa-exclamation-triangle"></i> Terjadi Error</div>
+                </div>
+                <h2>Oops! Gagal Memuat Riwayat</h2>
+                <p>${message}</p>
+            </div>
+        `;
+    }
+
 }
+
+
 
 export default HistoryView;
