@@ -86,43 +86,43 @@ body {
 }
 
 /* Sidebar Menu Styling */
-/* Gaya untuk Sub-menu di Sidebar */
-.side-menu .menu-items .has-submenu .submenu {
-    list-style: none;
-    padding-left: 20px; /* Indentasi untuk sub-menu */
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
-}
-
-.side-menu .menu-items .has-submenu.open .submenu {
-    max-height: 200px; /* Atur tinggi maksimal agar transisi terlihat */
-    margin-top: 10px;
-}
-
-.side-menu .menu-items .has-submenu .submenu li {
-    padding: 10px 20px;
-    border-bottom: none;
-    font-size: 0.9em;
-}
-
-.side-menu .menu-items .has-submenu .menu-toggle-submenu {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    color: #333;
-    text-decoration: none;
-}
-
 .side-menu .menu-items .has-submenu .submenu-arrow {
-    transition: transform 0.3s ease-in-out;
+    margin-left: auto; /* Mendorong panah ke paling kanan */
     font-size: 0.8em;
+    transition: transform 0.3s ease-in-out;
 }
 
+/* Animasi putar untuk panah saat sub-menu terbuka */
 .side-menu .menu-items .has-submenu.open .submenu-arrow {
     transform: rotate(180deg);
 }
+
+/* Kontainer untuk sub-menu (daftar Organik & Non-Organik) */
+.side-menu .menu-items .has-submenu .submenu {
+    list-style: none;
+    padding-left: 30px; /* Indentasi agar terlihat seperti anak menu */
+    background-color: #f0f0f0; /* Warna latar sedikit berbeda */
+    
+    /* Logika untuk menyembunyikan dan menampilkan dengan animasi */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+}
+
+/* Saat sub-menu terbuka */
+.side-menu .menu-items .has-submenu.open .submenu {
+    max-height: 200px; /* Atur tinggi maksimal yang cukup untuk semua item */
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+/* Setiap item di dalam sub-menu */
+.side-menu .menu-items .has-submenu .submenu li {
+    padding: 10px 15px 10px 25px; /* Atur padding agar pas */
+    border-bottom: none; /* Hapus garis bawah untuk item sub-menu */
+    font-size: 0.9em;
+}
+
 /* Overlay saat menu terbuka */
 .menu-overlay {
     position: fixed;
