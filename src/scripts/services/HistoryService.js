@@ -1,37 +1,17 @@
+// src/scripts/services/HistoryService.js
 
-import AuthService from './AuthService';
+// URL API Anda, sama dengan yang digunakan untuk klasifikasi
+const API_BASE_URL = 'https://smartwaste-api.fly.dev'; 
 
 class HistoryService {
     async saveScanHistory(scanData) {
-        const user = AuthService.getCurrentUser();
-        
-        // --- BLOK DEBUGGING ---
-        console.log("Mencoba menyimpan riwayat. Objek user saat ini:", user);
-        if (user && user.token) {
-            console.log("Token yang akan dikirim:", user.token.access_token);
-        } else {
-            console.error("TOKEN TIDAK DITEMUKAN PADA OBJEK USER!");
-        }
-        // --- AKHIR BLOK DEBUGGING ---
-
-        if (!user || !user.token || !user.token.access_token) {
-            return Promise.reject(new Error('Pengguna tidak valid atau token tidak ditemukan.'));
-        }
-
         try {
-            const response = await fetch('/.netlify/functions/save-history', {
+            const response = await fetch(`${API_BASE_URL}/history`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token.access_token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(scanData),
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menyimpan riwayat.');
-            }
+            if (!response.ok) throw new Error('Gagal menyimpan riwayat.');
             return await response.json();
         } catch (error) {
             console.error('Error in saveScanHistory:', error);
@@ -40,24 +20,9 @@ class HistoryService {
     }
 
     async getScanHistory() {
-        const user = AuthService.getCurrentUser();
-
-        if (!user || !user.token || !user.token.access_token) {
-            return Promise.reject(new Error('Pengguna tidak terautentikasi.'));
-        }
-        
         try {
-            const response = await fetch('/.netlify/functions/get-history', {
-                headers: {
-                    // INI BAGIAN PALING PENTING: Mengirim token sebagai bukti login
-                    'Authorization': `Bearer ${user.token.access_token}`
-                }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal mengambil riwayat.');
-            }
+            const response = await fetch(`${API_BASE_URL}/history`);
+            if (!response.ok) throw new Error('Gagal mengambil riwayat.');
             return await response.json();
         } catch (error) {
             console.error('Error in getScanHistory:', error);
