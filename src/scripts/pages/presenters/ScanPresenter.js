@@ -13,6 +13,7 @@ class ScanPresenter {
         this.recommendationView = recommendationView;
         this.appRouter = appRouter;
         this.scanView.presenter = this;
+        this.classificationView.presenter = this;
     }
 
     init() {

@@ -14,21 +14,22 @@ class ClassificationView extends BaseView {
      * @param {string} wasteType - Jenis sampah hasil klasifikasi (misal, 'Organik').
      */
     render(imageSrc, wasteType) {
-        // Pengecekan Pengaman: Jika dipanggil tanpa data, jangan render hasil.
-        // Ini mencegah error jika navigateTo dipanggil tanpa argumen.
+        // Pengecekan Pengaman
         if (!imageSrc || !wasteType) {
-            this.showLoading(); // Tampilkan loading sebagai default jika tidak ada data
-            return; 
+            this.showLoading();
+            return;
         }
 
+        // Simpan wasteType untuk digunakan di tombol navigasi submenu
+        this.latestWasteType = wasteType;
+
         let recommendationText = 'Informasi lebih lanjut tidak tersedia.';
-        // Gunakan .toLowerCase() dengan aman di sini
         switch (wasteType.toLowerCase()) {
             case 'organik':
                 recommendationText = 'Sampah ini dapat diolah menjadi kompos atau pakan ternak.';
                 break;
             case 'non_organik':
-            case 'anorganik': // Menangani kedua kemungkinan output
+            case 'anorganik':
                 recommendationText = 'Dapat didaur ulang. Pisahkan dan setorkan ke bank sampah.';
                 break;
             case 'b3':
@@ -51,8 +52,12 @@ class ClassificationView extends BaseView {
                     <p class="recommendation-text">${recommendationText}</p>
                 </div>
                 <button class="btn" id="scan-again-btn">Scan Lagi</button>
+                <button class="btn btn-submenu" id="go-submenu-btn">
+                    Lihat produk kreatif dari ${wasteType.charAt(0).toUpperCase() + wasteType.slice(1)}
+                </button>
             </div>
         `;
+
         this.bindEvents();
     }
 
@@ -71,7 +76,7 @@ class ClassificationView extends BaseView {
     showError(message) {
         this.container.innerHTML = `
             <div class="card classification-card error-card">
-                 <div class="page-specific-header">
+                <div class="page-specific-header">
                     <div class="page-header-logo"><i class="fas fa-exclamation-triangle"></i> Terjadi Error</div>
                 </div>
                 <h2>Oops! Terjadi Kesalahan</h2>
@@ -83,11 +88,21 @@ class ClassificationView extends BaseView {
     }
 
     bindEvents() {
+        // Tombol "Scan Lagi"
         const scanAgainButton = this.container.querySelector('#scan-again-btn');
-        // Pastikan presenter dan appRouter ada sebelum mengikat event
         if (scanAgainButton && this.presenter && this.presenter.appRouter) {
-             this.bind('click', '#scan-again-btn', () => {
+            this.bind('click', '#scan-again-btn', () => {
                 this.presenter.appRouter.navigateTo('scan');
+            });
+        }
+
+        // Tombol "Lihat Info Sampah..."
+        const infoButton = this.container.querySelector('#go-submenu-btn');
+        if (infoButton && this.presenter && this.presenter.appRouter && this.latestWasteType) {
+            this.bind('click', '#go-submenu-btn', () => {
+                const type = this.latestWasteType.toLowerCase();
+                const route = type === 'organik' ? 'creative/organik' : 'creative/nonorganik';
+                this.presenter.appRouter.navigateTo(route);
             });
         }
     }

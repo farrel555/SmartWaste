@@ -126,11 +126,12 @@ body {
     padding: 0;
     margin: 0;
     flex-grow: 1;
+    /* overflow-y: auto; */ /* Opsional: Jika menu items secara keseluruhan bisa discroll */
 }
 
 .side-menu .menu-items li {
     padding: 15px 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eee; /* Pertahankan border di sini untuk semua item LI */
     color: #333;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -150,14 +151,12 @@ body {
 /* === GAYA UNTUK SUB-MENU DI SIDEBAR (VERSI PERBAIKAN) === */
 
 /* Kontainer untuk item yang memiliki sub-menu (<li>) */
-/* === GAYA UNTUK SUB-MENU DI SIDEBAR (VERSI PERBAIKAN) === */
-
-/* Kontainer untuk item yang memiliki sub-menu (<li>) */
 .side-menu .menu-items .has-submenu {
-    padding: 0; /* Hapus padding dari <li> induk */
+    padding: 0; /* Hapus padding dari <li> induk, karena padding sudah ada di .menu-toggle-submenu */
     display: block; /* Pastikan display-nya block */
     position: relative;
-    border-bottom: 1px solid #eee; /* Pindahkan border ke sini */
+    /* border-bottom: 1px solid #eee; */ /* Hapus ini jika border sudah dihandle oleh .menu-items li */
+    /* Jika Anda ingin border khusus untuk item has-submenu ini, bisa dipertimbangkan ulang */
 }
 
 /* Tombol utama untuk membuka sub-menu (<a>) */
@@ -165,8 +164,7 @@ body {
     display: flex;
     align-items: center;
     width: 100%;
-    /* Gunakan padding yang sama dengan item menu lain */
-    padding: 15px 20px;
+    padding: 15px 20px; /* Gunakan padding yang sama dengan item menu lain */
     color: #333;
     text-decoration: none;
     background-color: transparent;
@@ -175,6 +173,8 @@ body {
     font-family: 'Arial', sans-serif;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .side-menu .menu-items .has-submenu .menu-toggle-submenu:hover {
@@ -210,22 +210,37 @@ body {
     
     /* Logika untuk menyembunyikan dan menampilkan dengan animasi */
     max-height: 0;
-    overflow: hidden;
+    overflow: hidden; /* Penting untuk menyembunyikan konten yang melampaui max-height */
     transition: max-height 0.3s ease-out;
 }
 
 /* Saat sub-menu terbuka */
 .side-menu .menu-items .has-submenu.open .submenu {
-    max-height: 85px; /* Atur tinggi maksimal yang cukup untuk semua item */
+    /* *** NILAI MAX-HEIGHT DISESUAIKAN DI SINI *** */
+    /*
+        Perhitungan:
+        - Dua item <li>.
+        - Setiap <li> memiliki padding: 10px atas + 10px bawah = 20px padding vertikal.
+        - Asumsikan tinggi teks 1em (~16px). Jadi, tinggi per <li> sekitar 16px + 20px = 36px.
+        - Total tinggi untuk 2 item: 2 * 36px = 72px.
+        - Submenu (<ul>) memiliki padding-top: 5px dan padding-bottom: 5px.
+        - Total tinggi yang dibutuhkan: 72px + 5px + 5px = 82px.
+        - Menggunakan sedikit lebih tinggi untuk amannya, misalnya 85px atau 86px.
+    */
+    max-height: 86px; /* Sesuaikan nilai ini jika 86px masih belum pas sempurna */
     padding-top: 5px;
     padding-bottom: 5px;
+    
+    /* Tambahkan ini jika Anda berencana menambahkan lebih banyak item dan ingin scrollbar muncul */
+    /* overflow-y: auto; */
 }
 
 /* Setiap item di dalam sub-menu (<li>) */
 .side-menu .menu-items .has-submenu .submenu li {
-    /* DIUBAH: Atur padding agar indentasi terjadi di sini */
-    padding: 10px 20px 10px 55px; /* 55px = 20px (padding induk) + 15px (margin ikon) + 20px (lebar ikon) */
-    border-bottom: none; /* Hapus garis bawah untuk item sub-menu */
+    /* Atur padding agar indentasi terjadi di sini */
+    /* 55px = 20px (padding default .menu-items li) + 15px (margin ikon) + 20px (lebar ikon, asumsi) */
+    padding: 10px 20px 10px 55px;
+    border-bottom: none; /* Hapus garis bawah untuk item sub-menu agar tidak ada garis di dalam kotak abu-abu */
     font-size: 0.9em;
 }
 
