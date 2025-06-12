@@ -380,40 +380,32 @@ body {
     margin-bottom: 10px;
 }
 
-/* Di dalam file main.css */
-
-/* --- Bagian Halaman Klasifikasi & Riwayat --- */
-
+/* Classification Display */
 .classification-result {
     text-align: center;
-    width: 100%; /* Pastikan kontainer mengambil lebar penuh */
 }
-
-.classification-result img {
-    /* DIUBAH: Aturan ini akan memastikan gambar tidak keluar batas */
-    max-width: 100%;    /* Lebar gambar tidak akan pernah melebihi lebar kontainernya */
-    height: auto;       /* Tinggi akan menyesuaikan secara proporsional */
-    max-height: 300px;  /* Batasi tinggi maksimal agar tidak terlalu besar di layar kecil */
-    object-fit: contain;/* Memastikan seluruh gambar terlihat tanpa distorsi */
-    
-    /* Aturan styling lain yang sudah ada */
+.classification-result img,
+.history-image {
+    width: 100px;
+    height: 100px;
     border-radius: 8px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 3px solid #eee;
 }
 
 .classification-result p {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
     margin-top: 15px;
 }
-
 .recommendation-text {
     font-size: 0.9em;
     font-weight: normal;
     color: #555;
     margin-top: 5px;
 }
+
 .history-list {
     display: flex;
     flex-direction: column;
@@ -736,6 +728,53 @@ body {
         margin: 0 auto;
     }
 
+/* Kontainer untuk seluruh daftar produk */
+    .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px; /* Jarak antar item produk */
+    }
+
+    /* Setiap item produk */
+    .product-item {
+        display: flex;
+        flex-direction: column; /* Ubah ke kolom untuk mobile-first */
+        gap: 15px;
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 5px solid #4CAF50; /* Aksen warna hijau */
+    }
+
+    /* Gambar produk */
+    .product-image {
+        width: 100%; /* Lebar gambar mengambil penuh kontainernya */
+        height: 180px; /* Beri tinggi tetap agar semua gambar sama ukurannya */
+        object-fit: cover; /* Memastikan gambar mengisi area tanpa distorsi */
+        border-radius: 5px;
+    }
+
+    /* Kontainer untuk info teks produk */
+    .product-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-info h3 {
+        margin: 0 0 5px 0;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 1.2em;
+        color: #333;
+    }
+
+    .product-info p {
+        margin: 0;
+        font-size: 0.95em;
+        line-height: 1.5;
+        color: #555;
+    }
+
     /* Individual cards (Auth, Scan, Classification, Recommendation) di tablet */
     .auth-card,
     .scan-card,
@@ -761,6 +800,18 @@ body {
     .dashboard-card {
         flex-basis: calc(33.333% - 20px);
         max-width: calc(33.333% - 20px);
+    }
+     .product-item {
+        /* Kembalikan ke tata letak horizontal di layar besar */
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .product-image {
+        /* Beri lebar tetap di layar besar */
+        width: 150px;
+        height: 150px;
+        flex-shrink: 0; /* Mencegah gambar menyusut */
     }
 
     /* Individual cards (Auth, Scan, Classification, Recommendation) di desktop */
