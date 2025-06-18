@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pandas==2.2.2
+scikit-learn==1.6.1
+matplotlib==3.10.0
+tensorflow==2.18.0
+numpy
+Pillow
+SQLAlchemy
+httpx
+psycopg2-binary
+python-jose[cryptography]
